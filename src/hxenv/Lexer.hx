@@ -1,0 +1,8 @@
+enum Token {
+
+}
+
+class Lexer {
+
+}
+
