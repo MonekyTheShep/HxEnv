@@ -77,7 +77,7 @@ class Lexer {
 			if (this.pos >= query.length) {
 				// when reached finalise
 				// add value if it has key
-				if (hasKey) {
+				if (hasKey && value != "") {
 					appendValue();
 				}
 
@@ -91,13 +91,12 @@ class Lexer {
 			var char = nextChar();
 
 			switch (char) {
-
 				// switch the state to key state when newline found
 				case '\n'.code:
 					if (state == CommentState) {
 						appendComment();
 					} else if (state == ValueState) {
-						if (hasKey) {
+						if (hasKey && value != "") {
 							appendValue();
 						}
 					}
@@ -106,7 +105,7 @@ class Lexer {
 					state = KeyState;
 
 					tokens.push(Newline);
-					
+
 					startLinePos = pos + 1;
 					continue;
 
@@ -114,7 +113,7 @@ class Lexer {
 				case '='.code:
 					// append the key when = is found if its not empty
 					// if this a comment state ignore this and add to comment
-					if (state != CommentState) {	
+					if (state != CommentState) {
 						if (state == KeyState && key != "") {
 							appendKey();
 							hasKey = true;
@@ -125,7 +124,6 @@ class Lexer {
 							trace("empty key");
 							hasKey = false;
 						}
-
 
 						state = ValueState;
 					} else {
@@ -147,7 +145,6 @@ class Lexer {
 							// cant have # in key
 							invalidChar(char);
 						}
-						
 					}
 
 					continue;
@@ -184,7 +181,6 @@ class Lexer {
 			tokens.push(Comment(trimmedComment));
 			comment = "";
 		}
-
 	}
 
 	function appendKey() {
@@ -195,13 +191,9 @@ class Lexer {
 	}
 
 	function appendValue() {
-		if (value != "") {
-			final trimmedValue:String = StringTools.trim(value);
-			tokens.push(Value(trimmedValue));
-			value = "";
-		}
-
-		
+		final trimmedValue:String = StringTools.trim(value);
+		tokens.push(Value(trimmedValue));
+		value = "";
 	}
 
 	function isWhiteSpace(char:String):Bool {
