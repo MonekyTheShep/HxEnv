@@ -144,8 +144,13 @@ class Lexer {
 							}
 
 						case ValueState:
-							// cant have # inside of value
-							invalidChar(char);
+							// cant have # before value
+							if (value != "") {
+								state = CommentState;
+							} else {
+								invalidChar(char);
+							}
+							
 
 						default:
 							trace('switch');
