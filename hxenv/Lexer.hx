@@ -86,14 +86,17 @@ class Lexer {
 						appendValue();
 				}
 
-				// append any comments before end
-				if (hasComment)
-					appendComment();
+				
 
 				// append any commas before end
 				if (multiLines) {
 					appendMultiLine();
 				}
+
+
+				// append any comments before end
+				if (hasComment)
+					appendComment();
 
 				tokens.push(Eof);
 				
@@ -115,18 +118,18 @@ class Lexer {
 						appendValue();
 					}
 
-					if (hasComment) {
-						appendComment();
-						hasComment = false;
-					}
-
-					// default state is key state i need to add check for multiline to set this to value state
+					// default state is key state
 					if (multiLines) {
 						state = ValueState;
 						appendMultiLine();
 						multiLines = false;
 					} else {
 						state = KeyState;
+					}
+
+					if (hasComment) {
+						appendComment();
+						hasComment = false;
 					}
 					
 
@@ -209,7 +212,7 @@ class Lexer {
 								tempPos++;
 								continue;
 							} else if (tempChar == "#"){
-								// ignore comment line
+								// ignore comment line since all values after it are ignored
 								onlyValidChar = true;
 								break;
 							}
