@@ -120,12 +120,12 @@ class Lexer {
 
 				// switch to comment state
 				case '#'.code:
+					// make sure no idiot can stick # in te middle of a value
 					if (state == KeyState || key != "") {
 						state = CommentState;
 					} else if (state == ValueState) {
 						value += String.fromCharCode(char);
 					}
-
 					
 					continue;
 
