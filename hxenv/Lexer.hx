@@ -1,7 +1,6 @@
 package hxenv;
 
 enum Token {
-	Section(section:String);
 	Key(key:String);
 	Value(value:String);
 	Equals;
@@ -69,6 +68,11 @@ class Lexer {
 		while (true) {
 			// if reached end break loop;
 			if (this.pos >= query.length) {
+				// when reached end add the end value;
+				if (value != "") {
+					cache.push(Value(value));
+				}
+				cache.push(Eof);
 				break;
 			}
 
@@ -92,19 +96,15 @@ class Lexer {
 				
 				// switch to comment state
 				case '#'.code:
-					state = CommentState;
+					state = CommentState;			
 
 				default:
-					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code)) {
+					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code )) {
 						if (state == KeyState) {
 							key += String.fromCharCode(char);
 						} else if (state == ValueState) {
 							value += String.fromCharCode(char);
 						}
-					}
-
-					if( StringTools.isEof(char)) {
-						cache.push(Eof);
 					}
 					
 			}
