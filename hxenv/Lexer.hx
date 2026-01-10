@@ -56,7 +56,7 @@ class Lexer {
 	}
 
 	public function lex(query:String):Array<Token> {
-		this.query = query;
+		this.query = StringTools.replace(query, "\r\n", "\n");
 		this.pos = 0;
 		this.lineNo = 1;
 
