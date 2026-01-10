@@ -76,10 +76,12 @@ class Lexer {
 			// if reached end break loop;
 			if (this.pos >= query.length) {
 				// when reached finalise
+				// add value if it has key
 				if (hasKey) {
 					appendValue();
 				}
-				
+
+				// append any comments before end
 				appendComment();
 
 				tokens.push(Eof);
@@ -94,7 +96,7 @@ class Lexer {
 				case '\n'.code:
 					if (state == CommentState) {
 						appendComment();
-					} else if (state == ValueState ) {
+					} else if (state == ValueState) {
 						if (hasKey) {
 							appendValue();
 						}
@@ -123,8 +125,7 @@ class Lexer {
 							trace("empty key");
 							hasKey = false;
 						}
-						
-						
+
 
 						state = ValueState;
 					} else {
