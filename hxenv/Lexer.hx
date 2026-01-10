@@ -208,19 +208,9 @@ class Lexer {
 	function appendValue() {
 		
 		final trimmedValue:String = StringTools.trim(value);
-
-		final first:String = trimmedValue.charAt(0);
-		var last:String = trimmedValue.charAt(trimmedValue.length - 1);
-		trace(first, last);
-		// compare first with last to see if valid quotes
-		if((first == '"' || first == "'") && first == last) {
-			tokens.push(Value(trimmedValue));
-			value = "";
-			trace('Valid Quotes');
-
-		} else if ((first == '"' || first == "'")) {
-			trace("Invalid Quotes");
-		}
+		
+		tokens.push(Value(trimmedValue));
+		value = "";
 		
 	}
 
