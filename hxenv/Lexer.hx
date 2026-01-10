@@ -107,6 +107,7 @@ class Lexer {
 					state = KeyState;
 					key = "";
 					value = "";
+					comment = "";
 					hasComment = false;
 					hasKey = false;
 
@@ -217,6 +218,6 @@ class Lexer {
 	}
 
 	function invalidChar(char) {
-		trace("Unexpected char:" + String.fromCharCode(char));
+		throw "Unexpected char '" + String.fromCharCode(char)+"'";
 	}
 }
