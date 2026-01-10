@@ -90,7 +90,6 @@ class Lexer {
 			switch (char) {
 				// switch the state to value when found "="
 				case '='.code:
-					
 					// if key state append key to cache
 					// if value state append equals to the value
 					if (state == KeyState || key != "") {
@@ -120,23 +119,24 @@ class Lexer {
 
 				// switch to comment state
 				case '#'.code:
-					// make sure no idiot can stick # in te middle of a value
+					// make sure no idiot can stick # in the middle of a value
 					if (state == KeyState || key != "") {
 						state = CommentState;
 					} else if (state == ValueState) {
 						value += String.fromCharCode(char);
 					}
-					
+
 					continue;
 
 				default:
 					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code)) {
-						if (state == KeyState) {
-							key += String.fromCharCode(char);
-						} else if (state == ValueState) {
-							value += String.fromCharCode(char);
-						} else if (state == CommentState) {
-							comment += String.fromCharCode(char);
+						switch (KeyState) {
+							case KeyState:
+								key += String.fromCharCode(char);
+							case ValueState:
+								value += String.fromCharCode(char);
+							case CommentState:
+								comment += String.fromCharCode(char);
 						}
 					}
 			}
