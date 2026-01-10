@@ -94,6 +94,7 @@ class Lexer {
 				case '\n'.code:
 
 					if (hasKey) {
+							
 							appendValue();
 							hasKey = false;
 					} 
@@ -166,7 +167,7 @@ class Lexer {
 						|| (char == "_".code)
 						|| (char == "#".code)
 						|| (char == '"'.code)
-						|| (char == '"'.code)
+						|| (char == "'".code)
 						|| (char == " ".code)){
 						switch (state) {
 							case KeyState:
@@ -201,10 +202,26 @@ class Lexer {
 		key = "";
 	}
 
+
+	// quotation handling
+
 	function appendValue() {
+		
 		final trimmedValue:String = StringTools.trim(value);
-		tokens.push(Value(trimmedValue));
-		value = "";
+
+		final first:String = trimmedValue.charAt(0);
+		var last:String = trimmedValue.charAt(trimmedValue.length - 1);
+		trace(first, last);
+		// compare first with last to see if valid quotes
+		if((first == '"' || first == "'") && first == last) {
+			tokens.push(Value(trimmedValue));
+			value = "";
+			trace('Valid Quotes');
+
+		} else if ((first == '"' || first == "'")) {
+			trace("Invalid Quotes");
+		}
+		
 	}
 
 	function isWhiteSpace(char:String):Bool {
