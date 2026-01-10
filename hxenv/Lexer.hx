@@ -79,23 +79,39 @@ class Lexer {
 
 			var char = nextChar();
 
+			trace(state);
+
 			switch (char) {
+
 				// switch the state to value when found "="
 				case '='.code:
+					final trimmedKey:String = StringTools.trim(key);
+					// if key state append key to cache
+					// if value state append equals to the value
+					if (state == KeyState || key != "") {
+						cache.push(Key(trimmedKey));
+						cache.push(Equals);
+						key = "";
+					} else if (state == ValueState) {
+						value += String.fromCharCode(char);
+					}
+					
+					
 					state = ValueState;
-					var trimmedKey:String = StringTools.trim(key);
-					cache.push(Key(trimmedKey));
-					cache.push(Equals);
-					key = "";
 					continue;
 
-				// switch the state to key state
+				// switch the state to key state when newline found
 				case '\n'.code:
+					// push value before new line
+					if (state == ValueState || value != "") {
+						final trimmedValue:String = StringTools.trim(value);
+						cache.push(Value(trimmedValue));
+						value = "";
+					}
+
 					state = KeyState;
-					var trimmedValue:String = StringTools.trim(value);
-					cache.push(Value(trimmedValue));
+					
 					cache.push(Newline);
-					value = "";
 					continue;
 				
 				// switch to comment state
