@@ -28,7 +28,7 @@ class Lexer {
 	var tokens:Array<Token> = [];
 
 	// store line
-	var lineNo:Int = 0;
+	var lineNo:Int = 1;
 
 	var state:LexerState = KeyState;
 	var key:String = "";
@@ -58,7 +58,7 @@ class Lexer {
 	public function lex(query:String):Array<Token> {
 		this.query = query;
 		this.pos = 0;
-		this.lineNo = 0;
+		this.lineNo = 1;
 
 		// loop through chars appending tokens until no more
 		tokenize();
@@ -93,7 +93,7 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or comment and then reset back to default state
 				case '\n'.code:
-					if (hasKey) {
+					if (state == ValueState && hasKey) {
 						appendValue();
 						hasKey = false;
 					} 
@@ -108,6 +108,7 @@ class Lexer {
 					key = "";
 					value = "";
 					hasComment = false;
+					hasKey = false;
 
 					tokens.push(Newline);
 					lineNo++;
