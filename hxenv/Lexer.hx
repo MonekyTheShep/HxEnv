@@ -220,6 +220,8 @@ class Lexer {
 						} else {
 							multiLines = false;
 						}
+					}  else {
+						commentBuf.addChar(char);
 					}
 
 				// append characters to buffers
