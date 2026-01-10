@@ -28,7 +28,7 @@ class Lexer {
 	var idChar:Array<Bool>;
 
 	// store current token from char
-	var cache:Array<Token> = [];
+	var tokens:Array<Token> = [];
 
 	var state:LexerState = KeyState;
 	var key:String = "";
@@ -58,12 +58,10 @@ class Lexer {
 		this.pos = 0;
 		this.lineNo = 0;
 
-		var result = [];
-
 		// loop through chars appending tokens until no more
 		tokenize();
 
-		return cache;
+		return tokens;
 	}
 
 	function tokenize() {
@@ -76,7 +74,7 @@ class Lexer {
 				// if (key != "") {
 				// 	appendKey();
 				// }
-				
+
 				if (value != "") {
 					appendValue();
 				}
