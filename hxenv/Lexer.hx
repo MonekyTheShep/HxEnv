@@ -158,7 +158,8 @@ class Lexer {
 						|| (char >= 'a'.code && char <= 'z'.code)
 						|| (char >= '0'.code && char <= '9'.code)
 						|| (char == "_".code)
-						|| (char == "#".code)) {
+						|| (char == "#".code)
+						|| (char == " ".code)) {
 						switch (state) {
 							case KeyState:
 								key += String.fromCharCode(char);
@@ -181,8 +182,7 @@ class Lexer {
 
 	function appendComment() {
 		if (comment != "") {
-			final trimmedComment:String = StringTools.trim(comment);
-			tokens.push(Comment(trimmedComment));
+			tokens.push(Comment(comment));
 			comment = "";
 		}
 	}
