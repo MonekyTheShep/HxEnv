@@ -5,6 +5,7 @@ enum Token {
 	Value(value:String); // 𝑥 = 𝑦
 	Comment(value:String); // # {comment}
 	Equals; // = 
+	Comma; // ,
 	Newline; // \n
 	Eof; // end of file
 } 
@@ -69,6 +70,7 @@ class Lexer {
 	function tokenize() {
 		var hasKey = false;
 		var hasComment = false;
+		var multiLines = false;
 		trace(lineNo);
 
 		while (true) {
@@ -80,6 +82,8 @@ class Lexer {
 					appendValue();
 				} else if(keyBuf.toString() != ""){
 					throw ("Invalid key no equals sign at line " + lineNo);
+				} else if(valueBuf.toString() != "") {
+						appendValue();
 				}
 
 				// append any comments before end
@@ -96,11 +100,16 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or comment and then reset back to default state
 				case '\n'.code:
+
+					trace(valueBuf.toString());
+
 					if (hasKey) {
 						appendValue();
 						hasKey = false;
 					}  else if (keyBuf.toString() != ""){
 						throw ("Invalid key no equals sign at line " + lineNo);
+					} else if(valueBuf.toString() != "") {
+						appendValue();
 					}
 
 					if (hasComment) {
@@ -108,11 +117,19 @@ class Lexer {
 						hasComment = false;
 					}
 
-					// default state is key state
-					state = KeyState;
+					// default state is key state i need to add check for multiline to set this to value state
+					if (multiLines) {
+						state = ValueState;
+						appendMultiLine();
+					} else {
+						state = KeyState;
+					}
+					
+
 					keyBuf = new StringBuf();
 					valueBuf = new StringBuf();
 					commentBuf = new StringBuf();
+					
 					hasComment = false;
 					hasKey = false;
 
@@ -166,6 +183,39 @@ class Lexer {
 					}
 					continue;
 
+
+				case ','.code:
+					// if , after comment ignore it i also need to add check for if its at end of line
+					// peak ahead of the pos until reach new line
+					if (state != CommentState) {
+						var tempPos = pos;
+						var onlyNewLine = false;
+
+						// create temp pos to peak ahead of the comma to check if the next is a newline
+						while (tempPos <= query.length){
+							var tempChar = query.charAt(tempPos);
+							if (tempChar == "\n" || tempChar == " ") {
+								trace("found new line");
+								onlyNewLine = true;
+								break;
+							} else {
+								trace("found not new line");
+								onlyNewLine = false;
+								break;
+							}
+						}
+
+						if(onlyNewLine) {
+							multiLines = true;
+						} else {
+							multiLines = false;
+						}
+
+						trace("found", multiLines);
+
+					}
+
+				// append characters to buffers
 				default:
 					if ((idChar[char])
 						|| (char == "_".code)
@@ -212,6 +262,10 @@ class Lexer {
 
 		tokens.push(Value(trimmedValue));
 		valueBuf = new StringBuf();
+	}
+
+	function appendMultiLine() {
+		tokens.push(Comma);
 	}
 
 	function isWhiteSpace(char:String):Bool {
