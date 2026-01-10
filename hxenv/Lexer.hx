@@ -1,7 +1,5 @@
 package hxenv;
 
-
-
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Value(value:String); // 𝑥 = 𝑦
@@ -75,36 +73,46 @@ class Lexer {
 		var hasComment = false;
 		var multiLines = false;
 		var continuedNextLine = false;
+
+		function finaliseTokens() {
+			if (hasKey) {
+				appendValue();
+				hasKey = false;
+			} else if (keyBuf.toString() != "") {
+				throw("Invalid key no equals sign at line " + lineNo);
+			} else if (valueBuf.toString() != "") {
+				appendValue();
+			}
+
+			if (continuedNextLine && hasComment) {
+				throw("Cant have comment in multiline");
+			} else {
+				continuedNextLine = false;
+			}
+
+			// default state is key state
+			if (multiLines) {
+				state = ValueState;
+				appendMultiLine();
+				continuedNextLine = true;
+				multiLines = false;
+			} else {
+				state = KeyState;
+			}
+
+			if (hasComment) {
+				appendComment();
+				hasComment = false;
+			}
+		}
+
 		trace(lineNo);
 
 		while (true) {
 			// if reached end break loop;
 			if (this.pos >= query.length) {
 				// when reached finalise
-				// add value if it has key
-				if (hasKey) {
-					appendValue();
-				} else if (keyBuf.toString() != "") {
-					throw("Invalid key no equals sign at line " + lineNo);
-				} else if (valueBuf.toString() != "") {
-					appendValue();
-				}
-
-				if (continuedNextLine && hasComment) {
-					throw ("Cant have comment in multiline");
-				} else {
-						continuedNextLine = false;
-				}
-
-
-				// append any commas before end
-				if (multiLines) {
-					appendMultiLine();
-				}
-
-				// append any comments before end
-				if (hasComment)
-					appendComment();
+				finaliseTokens();
 
 				tokens.push(Eof);
 
@@ -116,39 +124,9 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or comment and then reset back to default state
 				case '\n'.code:
-					if (hasKey) {
-						appendValue();
-						hasKey = false;
-					} else if (keyBuf.toString() != "") {
-						throw("Invalid key no equals sign at line " + lineNo);
-					} else if (valueBuf.toString() != "") {
-						appendValue();
-					}
+					finaliseTokens();
 
-					if (continuedNextLine && hasComment) {
-						throw ("Cant have comment in multiline");
-					} else {
-						continuedNextLine = false;
-					}
-					
-					// default state is key state
-					if (multiLines) {
-						state = ValueState;
-						appendMultiLine();
-						continuedNextLine = true;
-						multiLines = false;
-					} else {
-						state = KeyState;
-					}
-
-					if (hasComment) {
-						appendComment();
-						hasComment = false;
-					}  
-
-					keyBuf = new StringBuf();
-					valueBuf = new StringBuf();
-					commentBuf = new StringBuf();
+					resetBuffers();
 
 					hasComment = false;
 					hasKey = false;
@@ -206,11 +184,10 @@ class Lexer {
 					continue;
 
 				case '"'.code, "'".code:
-					if(state == CommentState) {
+					if (state == CommentState) {
 						commentBuf.addChar(char);
 					}
-					// force scan of quotes to the end of line
-					trace("Quotes");
+				// force scan of quotes to the end of line
 
 				case ','.code:
 					// if , after comment ignore it i also need to add check for if its at end of line
@@ -238,7 +215,7 @@ class Lexer {
 							} else {
 								// this bool is useless since throw ends the program
 								onlyValidChar = false;
-								throw("Cant have comma in the middle of a line " + lineNo);
+								throw("Invalid multi line at " + lineNo);
 							}
 						}
 
@@ -247,7 +224,7 @@ class Lexer {
 						} else {
 							multiLines = false;
 						}
-					}  else {
+					} else {
 						commentBuf.addChar(char);
 					}
 
@@ -262,13 +239,14 @@ class Lexer {
 							case CommentState:
 								commentBuf.addChar(char);
 							case QuoteState:
-
 						}
 					} else {
 						invalidChar(char);
 					}
 			}
 		}
+
+		
 		return;
 	}
 
@@ -288,8 +266,6 @@ class Lexer {
 		keyBuf = new StringBuf();
 	}
 
-	// quotation handling
-
 	function appendValue() {
 		final trimmedValue:String = StringTools.trim(valueBuf.toString());
 
@@ -305,6 +281,12 @@ class Lexer {
 		var r = new EReg(whiteSpaceCharacter, "g");
 
 		return r.match(char);
+	}
+
+	function resetBuffers() {
+		keyBuf = new StringBuf();
+		valueBuf = new StringBuf();
+		commentBuf = new StringBuf();
 	}
 
 	function invalidChar(char) {
