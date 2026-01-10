@@ -21,9 +21,6 @@ class Lexer {
 	// store current pos in query
 	var pos:Int;
 
-	// current line number
-	var lineNo:Int;
-
 	// valid chars
 	var idChar:Array<Bool>;
 
