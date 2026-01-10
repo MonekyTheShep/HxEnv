@@ -104,7 +104,8 @@ class Lexer {
 					// default state is key state
 					state = KeyState;
 					key = "";
-					
+					value = "";
+
 					tokens.push(Newline);
 					lineNo++;
 					trace(lineNo);
