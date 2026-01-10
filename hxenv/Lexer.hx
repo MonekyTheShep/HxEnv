@@ -65,7 +65,7 @@ class Lexer {
 	}
 
 	function tokenize() {
-		var startLinePos = 0;
+		var startLinePos = 1;
 
 		while (true) {
 			// if reached end break loop;
@@ -120,7 +120,6 @@ class Lexer {
 					if (state == CommentState && comment != "") {
 						appendComment();
 					}
-
 
 					// default state is key state
 					state = KeyState;
