@@ -1,5 +1,6 @@
 package hxenv;
 
+
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Value(value:String); // 𝑥 = 𝑦
@@ -13,6 +14,7 @@ enum Token {
 enum LexerState {
 	KeyState; // key gets appended into key buffer
 	ValueState; // values gets appended into value buffer
+	QuoteState; // if inside of quotes
 	CommentState; // comments get appended into comment buffer
 }
 
@@ -71,6 +73,7 @@ class Lexer {
 		var hasKey = false;
 		var hasComment = false;
 		var multiLines = false;
+		var continuedNextLine = false;
 		trace(lineNo);
 
 		while (true) {
@@ -85,6 +88,14 @@ class Lexer {
 				} else if (valueBuf.toString() != "") {
 					appendValue();
 				}
+
+
+				if (continuedNextLine && hasComment) {
+					throw ("Cant have comment in multiline");
+				} else {
+						continuedNextLine = false;
+				}
+
 
 				// append any commas before end
 				if (multiLines) {
@@ -114,19 +125,26 @@ class Lexer {
 						appendValue();
 					}
 
+					if (continuedNextLine && hasComment) {
+						throw ("Cant have comment in multiline");
+					} else {
+						continuedNextLine = false;
+					}
+					
 					// default state is key state
 					if (multiLines) {
 						state = ValueState;
 						appendMultiLine();
+						continuedNextLine = true;
 						multiLines = false;
 					} else {
 						state = KeyState;
 					}
 
-					if (hasComment) {
+					if (hasComment && state == KeyState) {
 						appendComment();
 						hasComment = false;
-					}
+					}  
 
 					keyBuf = new StringBuf();
 					valueBuf = new StringBuf();
@@ -182,8 +200,17 @@ class Lexer {
 						case ValueState:
 							hasComment = true;
 							state = CommentState;
+
+						case QuoteState:
 					}
 					continue;
+
+				case '"'.code, "'".code:
+					if(state == CommentState) {
+						commentBuf.addChar(char);
+					}
+					// force scan of quotes to the end of line
+					trace("Quotes");
 
 				case ','.code:
 					// if , after comment ignore it i also need to add check for if its at end of line
@@ -231,9 +258,11 @@ class Lexer {
 							case KeyState:
 								if (char != " ".code) keyBuf.addChar(char);
 							case ValueState:
-								valueBuf.addChar(char);
+								if (char != '"'.code || char != "'".code) valueBuf.addChar(char);
 							case CommentState:
 								commentBuf.addChar(char);
+							case QuoteState:
+
 						}
 					} else {
 						invalidChar(char);
