@@ -91,7 +91,7 @@ class Lexer {
 			var char = nextChar();
 
 			switch (char) {
-				// switch the state to key state when newline found
+				// when new line is found append the value or key and then reset back to default state
 				case '\n'.code:
 					if (state == CommentState) {
 						appendComment();
