@@ -195,6 +195,7 @@ class Lexer {
 						var tempPos:Int = pos;
 						
 						var onlyValidChar:Bool = true;
+						var isCommentedLine = false;
 						// create temp pos to peak ahead of the comma to check if the next is a newline
 						while (tempPos <= query.length){
 
@@ -207,10 +208,17 @@ class Lexer {
 							} else if(tempChar == " " || tempChar == "") {
 								tempPos++;
 								continue;
+							} else if (tempChar == "#"){
+								// ignore comment line
+								onlyValidChar = true;
+								break;
 							}
 							else {
-								throw ("Cant have comma in the middle of a line " + lineNo);
-								onlyValidChar = false;
+								if (!isCommentedLine) {
+									throw ("Cant have comma in the middle of a line " + lineNo);
+									onlyValidChar = false;
+								}
+								
 							}
 							
 						}
