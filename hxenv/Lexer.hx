@@ -1,5 +1,7 @@
 package hxenv;
 
+import haxe.display.Display.CompletionMode;
+
 enum Token {
 	Key(key:String);
 	Value(value:String);
@@ -63,6 +65,8 @@ class Lexer {
 	}
 
 	function tokenize() {
+		var startLinePos = 0;
+
 		while (true) {
 			// if reached end break loop;
 			if (this.pos >= query.length) {
@@ -87,45 +91,60 @@ class Lexer {
 
 			var char = nextChar();
 
-
 			switch (char) {
 				// switch the state to value when found "="
 				case '='.code:
-					// if key state append key to cache
-					// if value state append equals to the value
-					if (state == KeyState || key != "") {
-						appendKey();
-					} else if (state == ValueState) {
-						value += String.fromCharCode(char);
+					// append the key when = is found if its not empty
+					// if this a comment state ignore this and add to comment
+					if (state != CommentState) {
+						if (state == KeyState && key != "") {
+							appendKey();
+						} else if (state == ValueState) {
+							value += String.fromCharCode(char);
+						}
+
+						state = ValueState;
+					} else {
+						comment += String.fromCharCode(char);
 					}
 
-					state = ValueState;
 					continue;
 
 				// switch the state to key state when newline found
 				case '\n'.code:
 					// push value before new line
-					if (state == ValueState || value != "") {
+					if (state == ValueState && value != "") {
 						appendValue();
 					}
 
-					if (state == CommentState || comment != "") {
+					if (state == CommentState && comment != "") {
 						appendComment();
 					}
 
+
+					// default state is key state
 					state = KeyState;
 
 					tokens.push(Newline);
+					
+					startLinePos = pos + 1;
 					continue;
 
-				// // switch to comment state
-				// case '#'.code:
-				// 	// make sure no idiot can stick # in the middle of a value
-				// 	if (state == KeyState || key != "") {
-				// 		state = CommentState;
-				// 	} else if (state == ValueState) {
-				// 		value += String.fromCharCode(char);
-				// 	}
+				// switch to comment state
+				case '#'.code:
+					// if line starts with # set state to comment
+					if (startLinePos == pos) {
+						state = CommentState;
+					} else {
+						if (state == ValueState) {
+							// else append all # to value state
+							value += String.fromCharCode(char);
+						} else if (state == KeyState) {
+							// cant have # in key
+							invalidChar(char);
+						}
+						
+					}
 
 				// 	continue;
 
@@ -133,17 +152,16 @@ class Lexer {
 					if ((char >= 'A'.code && char <= 'Z'.code)
 						|| (char >= 'a'.code && char <= 'z'.code)
 						|| (char >= '0'.code && char <= '9'.code)
-						|| (char == "_".code)) {
-							switch (state) {
-								case KeyState:
-									key += String.fromCharCode(char);
-								case ValueState:
-									value += String.fromCharCode(char);
-									
-								case CommentState:
-									comment += String.fromCharCode(char);
-							}
-						
+						|| (char == "_".code)
+						|| (char == "#".code)) {
+						switch (state) {
+							case KeyState:
+								key += String.fromCharCode(char);
+							case ValueState:
+								value += String.fromCharCode(char);
+							case CommentState:
+								comment += String.fromCharCode(char);
+						}
 					} else {
 						invalidChar(char);
 					}
@@ -182,6 +200,6 @@ class Lexer {
 	}
 
 	function invalidChar(char) {
-		trace("Unexpected char:" + String.fromCharCode(char)) ;
+		trace("Unexpected char:" + String.fromCharCode(char));
 	}
 }
