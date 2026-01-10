@@ -129,7 +129,7 @@ class Lexer {
 				// 	continue;
 
 				default:
-					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code) || (char >= '0'.code && char <= '9'.code)) {
+					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code) || (char >= '0'.code && char <= '9'.code) || (char == "_".code)) {
 						switch (state) {
 							case KeyState:
 								key += String.fromCharCode(char);

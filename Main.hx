@@ -3,6 +3,6 @@ class Main {
     static function main() {
         var lexer:Lexer = new Lexer();
 
-        trace(lexer.lex("GAY=PENIS\nNIGGA=TEST\nYAY=ENV\n1"));
+        trace(lexer.lex("GAY123=PENIS\nNIGGA321=TEST\nYAY=ENV\n"));
     }
 }
