@@ -1,6 +1,7 @@
 package hxenv;
 
 
+
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Value(value:String); // 𝑥 = 𝑦
@@ -89,7 +90,6 @@ class Lexer {
 					appendValue();
 				}
 
-
 				if (continuedNextLine && hasComment) {
 					throw ("Cant have comment in multiline");
 				} else {
@@ -141,7 +141,7 @@ class Lexer {
 						state = KeyState;
 					}
 
-					if (hasComment && state == KeyState) {
+					if (hasComment) {
 						appendComment();
 						hasComment = false;
 					}  
