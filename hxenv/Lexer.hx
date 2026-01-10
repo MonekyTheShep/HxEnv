@@ -182,10 +182,9 @@ class Lexer {
 	}
 
 	function appendComment() {
-		if (comment != "") {
-			tokens.push(Comment(comment));
-			comment = "";
-		}
+		tokens.push(Comment(comment));
+		comment = "";
+		
 	}
 
 	function appendKey() {
