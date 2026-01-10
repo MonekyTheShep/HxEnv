@@ -1,6 +1,5 @@
 package hxenv;
 
-import haxe.display.Display.CompletionMode;
 
 enum Token {
 	Key(key:String);
@@ -30,7 +29,7 @@ class Lexer {
 	var tokens:Array<Token> = [];
 
 	// store line
-	var cache:Array<Token> = [];
+	var lineNo:Int = 0;
 
 	var state:LexerState = KeyState;
 	var key:String = "";
@@ -60,6 +59,7 @@ class Lexer {
 	public function lex(query:String):Array<Token> {
 		this.query = query;
 		this.pos = 0;
+		this.lineNo = 0;
 
 		// loop through chars appending tokens until no more
 		tokenize();
@@ -93,6 +93,7 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or key and then reset back to default state
 				case '\n'.code:
+
 					if (state == CommentState) {
 						appendComment();
 					} else if (state == ValueState) {
@@ -105,6 +106,8 @@ class Lexer {
 					state = KeyState;
 
 					tokens.push(Newline);
+					lineNo++;
+					trace(lineNo);
 
 					startLinePos = pos + 1;
 					continue;
