@@ -4,11 +4,11 @@ enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Value(value:String); // 𝑥 = 𝑦
 	Comment(value:String); // # {comment}
-	Equals; // = 
+	Equals; // =
 	Comma; // ,
 	Newline; // \n
 	Eof; // end of file
-} 
+}
 
 enum LexerState {
 	KeyState; // key gets appended into key buffer
@@ -80,26 +80,23 @@ class Lexer {
 				// add value if it has key
 				if (hasKey) {
 					appendValue();
-				} else if(keyBuf.toString() != ""){
-					throw ("Invalid key no equals sign at line " + lineNo);
-				} else if(valueBuf.toString() != "") {
-						appendValue();
+				} else if (keyBuf.toString() != "") {
+					throw("Invalid key no equals sign at line " + lineNo);
+				} else if (valueBuf.toString() != "") {
+					appendValue();
 				}
-
-				
 
 				// append any commas before end
 				if (multiLines) {
 					appendMultiLine();
 				}
 
-
 				// append any comments before end
 				if (hasComment)
 					appendComment();
 
 				tokens.push(Eof);
-				
+
 				break;
 			}
 
@@ -108,13 +105,12 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or comment and then reset back to default state
 				case '\n'.code:
-
 					if (hasKey) {
 						appendValue();
 						hasKey = false;
-					}  else if (keyBuf.toString() != ""){
-						throw ("Invalid key no equals sign at line " + lineNo);
-					} else if(valueBuf.toString() != "") {
+					} else if (keyBuf.toString() != "") {
+						throw("Invalid key no equals sign at line " + lineNo);
+					} else if (valueBuf.toString() != "") {
 						appendValue();
 					}
 
@@ -131,12 +127,11 @@ class Lexer {
 						appendComment();
 						hasComment = false;
 					}
-					
 
 					keyBuf = new StringBuf();
 					valueBuf = new StringBuf();
 					commentBuf = new StringBuf();
-					
+
 					hasComment = false;
 					hasKey = false;
 
@@ -158,7 +153,7 @@ class Lexer {
 							// append any other = to value
 							valueBuf.addChar(char);
 						} else if (StringTools.trim(keyBuf.toString()) == "") {
-							throw ("Cant have empty key at line " + lineNo);
+							throw("Cant have empty key at line " + lineNo);
 							hasKey = false;
 						}
 
@@ -190,43 +185,37 @@ class Lexer {
 					}
 					continue;
 
-
 				case ','.code:
 					// if , after comment ignore it i also need to add check for if its at end of line
 					// peak ahead of the pos until reach new line
 					if (state != CommentState) {
 						var tempPos:Int = pos;
-						
-						var onlyValidChar:Bool = true;
-						var isCommentedLine = false;
-						// create temp pos to peak ahead of the comma to check if the next is a newline
-						while (tempPos <= query.length){
 
+						var onlyValidChar:Bool = true;
+
+						// create temp pos to peak ahead of the comma to check if the next is a newline
+						while (tempPos <= query.length) {
 							onlyValidChar = true;
 							var tempChar = query.charAt(tempPos);
 
 							if (tempChar == "\n") {
 								onlyValidChar = true;
 								break;
-							} else if(tempChar == " " || tempChar == "") {
+							} else if (tempChar == " " || tempChar == "") {
 								tempPos++;
 								continue;
-							} else if (tempChar == "#"){
+							} else if (tempChar == "#") {
 								// ignore comment line since all values after it are ignored
 								onlyValidChar = true;
 								break;
+							} else {
+								// this bool is useless since throw ends the program
+								onlyValidChar = false;
+								throw("Cant have comma in the middle of a line " + lineNo);
 							}
-							else {
-								if (!isCommentedLine) {
-									throw ("Cant have comma in the middle of a line " + lineNo);
-									onlyValidChar = false;
-								}
-								
-							}
-							
 						}
 
-						if(onlyValidChar) {
+						if (onlyValidChar) {
 							multiLines = true;
 						} else {
 							multiLines = false;
@@ -235,12 +224,7 @@ class Lexer {
 
 				// append characters to buffers
 				default:
-					if ((idChar[char])
-						|| (char == "_".code)
-						|| (char == '"'.code)
-						|| (char == "'".code)
-						|| (char == " ".code)
-						|| (char == ".".code)) {
+					if ((idChar[char]) || (char == "_".code) || (char == '"'.code) || (char == "'".code) || (char == " ".code) || (char == ".".code)) {
 						switch (state) {
 							case KeyState:
 								if (char != " ".code) keyBuf.addChar(char);
