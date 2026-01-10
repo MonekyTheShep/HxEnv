@@ -1,18 +1,18 @@
 package hxenv;
 
 enum Token {
-	Key(key:String);
-	Value(value:String);
-	Comment(value:String);
-	Equals;
-	Newline;
-	Eof;
-}
+	Key(key:String); // 𝑥 = 𝑦
+	Value(value:String); // 𝑥 = 𝑦
+	Comment(value:String); // # {comment}
+	Equals; // = 
+	Newline; // \n
+	Eof; // end of file
+} 
 
 enum LexerState {
-	KeyState;
-	ValueState;
-	CommentState;
+	KeyState; // key gets appended into key buffer
+	ValueState; // values gets appended into value buffer
+	CommentState; // comments get appended into comment buffer
 }
 
 class Lexer {
@@ -143,10 +143,11 @@ class Lexer {
 					switch (state) {
 						case CommentState:
 							state = CommentState;
+							comment += String.fromCharCode(char);
 						case KeyState:
-							hasComment = true;
 							// cant have # inside of key
 							if (key == "") {
+								hasComment = true;
 								state = CommentState;
 							} else {
 								invalidChar(char);
@@ -163,7 +164,6 @@ class Lexer {
 						|| (char >= 'a'.code && char <= 'z'.code)
 						|| (char >= '0'.code && char <= '9'.code)
 						|| (char == "_".code)
-						|| (char == "#".code)
 						|| (char == '"'.code)
 						|| (char == "'".code)
 						|| (char == " ".code)
