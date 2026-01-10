@@ -31,9 +31,9 @@ class Lexer {
 	var lineNo:Int = 1;
 
 	var state:LexerState = KeyState;
-	var key:String = "";
-	var value:String = "";
-	var comment:String = "";
+	var keyBuf = new StringBuf();
+	var valueBuf = new StringBuf();
+	var commentBuf = new StringBuf();
 
 	final whiteSpaceCharacter:String = "\\s+";
 
@@ -105,9 +105,9 @@ class Lexer {
 
 					// default state is key state
 					state = KeyState;
-					key = "";
-					value = "";
-					comment = "";
+					keyBuf = new StringBuf();
+					valueBuf = new StringBuf();
+					commentBuf = new StringBuf();
 					hasComment = false;
 					hasKey = false;
 
@@ -122,20 +122,20 @@ class Lexer {
 					// append the key when = is found if its not empty
 					// if this a comment state ignore this and add to comment
 					if (state != CommentState) {
-						if (state == KeyState && key != "") {
+						if (state == KeyState && keyBuf.toString() != "") {
 							appendKey();
 							hasKey = true;
 						} else if (state == ValueState) {
 							// append any other = to value
-							value += String.fromCharCode(char);
-						} else if (key == "") {
+							valueBuf.addChar(char);
+						} else if (keyBuf.toString() == "") {
 							trace("empty key");
 							hasKey = false;
 						}
 
 						state = ValueState;
 					} else {
-						comment += String.fromCharCode(char);
+						commentBuf.addChar(char);
 					}
 
 					continue;
@@ -145,10 +145,10 @@ class Lexer {
 					switch (state) {
 						case CommentState:
 							state = CommentState;
-							comment += String.fromCharCode(char);
+							commentBuf.addChar(char);
 						case KeyState:
 							// cant have # inside of key
-							if (key == "") {
+							if (keyBuf.toString() == "") {
 								hasComment = true;
 								state = CommentState;
 							} else {
@@ -172,11 +172,11 @@ class Lexer {
 						|| (char == ".".code)) {
 						switch (state) {
 							case KeyState:
-								key += String.fromCharCode(char);
+								keyBuf.addChar(char);
 							case ValueState:
-								value += String.fromCharCode(char);
+								valueBuf.addChar(char);
 							case CommentState:
-								comment += String.fromCharCode(char);
+								commentBuf.addChar(char);
 						}
 					} else {
 						invalidChar(char);
@@ -191,24 +191,24 @@ class Lexer {
 	}
 
 	function appendComment() {
-		tokens.push(Comment(comment));
-		comment = "";
+		tokens.push(Comment(commentBuf.toString()));
+		commentBuf = new StringBuf();
 	}
 
 	function appendKey() {
-		final trimmedKey:String = StringTools.trim(key);
+		final trimmedKey:String = StringTools.trim(keyBuf.toString());
 		tokens.push(Key(trimmedKey));
 		tokens.push(Equals);
-		key = "";
+		keyBuf = new StringBuf();
 	}
 
 	// quotation handling
 
 	function appendValue() {
-		final trimmedValue:String = StringTools.trim(value);
+		final trimmedValue:String = StringTools.trim(valueBuf.toString());
 
 		tokens.push(Value(trimmedValue));
-		value = "";
+		valueBuf = new StringBuf();
 	}
 
 	function isWhiteSpace(char:String):Bool {
@@ -218,6 +218,6 @@ class Lexer {
 	}
 
 	function invalidChar(char) {
-		throw "Unexpected char '" + String.fromCharCode(char)+"'";
+		throw "Unexpected char " + String.fromCharCode(char) + " at line " + lineNo;
 	}
 }
