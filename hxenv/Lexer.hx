@@ -35,7 +35,7 @@ class Lexer {
 	var valueBuf = new StringBuf();
 	var commentBuf = new StringBuf();
 
-	final whiteSpaceCharacter:String = "\\s+";
+	inline static final whiteSpaceCharacter:String = "\\s+";
 
 	public function new() {
 		idChar = [];
