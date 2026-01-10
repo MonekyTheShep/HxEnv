@@ -135,16 +135,16 @@ class Lexer {
 						|| (char >= 'a'.code && char <= 'z'.code)
 						|| (char >= '0'.code && char <= '9'.code)
 						|| (char == "_".code)) {
-						if (!isWhiteSpace(String.fromCharCode(char))) {
 							switch (state) {
 								case KeyState:
 									key += String.fromCharCode(char);
 								case ValueState:
 									value += String.fromCharCode(char);
+									
 								case CommentState:
 									comment += String.fromCharCode(char);
 							}
-						}
+						
 					}
 			}
 		}
