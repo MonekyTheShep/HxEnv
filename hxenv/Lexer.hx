@@ -117,16 +117,16 @@ class Lexer {
 					tokens.push(Newline);
 					continue;
 
-				// switch to comment state
-				case '#'.code:
-					// make sure no idiot can stick # in the middle of a value
-					if (state == KeyState || key != "") {
-						state = CommentState;
-					} else if (state == ValueState) {
-						value += String.fromCharCode(char);
-					}
+				// // switch to comment state
+				// case '#'.code:
+				// 	// make sure no idiot can stick # in the middle of a value
+				// 	if (state == KeyState || key != "") {
+				// 		state = CommentState;
+				// 	} else if (state == ValueState) {
+				// 		value += String.fromCharCode(char);
+				// 	}
 
-					continue;
+				// 	continue;
 
 				default:
 					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code)) {
