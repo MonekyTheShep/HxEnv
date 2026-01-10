@@ -1,6 +1,5 @@
 package hxenv;
 
-
 enum Token {
 	Key(key:String);
 	Value(value:String);
@@ -93,7 +92,6 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or key and then reset back to default state
 				case '\n'.code:
-
 					if (state == CommentState) {
 						appendComment();
 					} else if (state == ValueState) {
@@ -137,20 +135,24 @@ class Lexer {
 
 				// switch to comment state
 				case '#'.code:
-					// if line starts with # set state to comment
-					if (startLinePos == pos) {
-						state = CommentState;
-					} else if (state == ValueState) {
-						// else append all # to value state
-						value += String.fromCharCode(char);
-					} else if (state == KeyState) {
-						// cant have # in key
-						invalidChar(char);
-					} else {
-						// append any # not at start to comment
-						comment += String.fromCharCode(char);
-					}
+					switch (state) {
+						case CommentState:
+							comment += String.fromCharCode(char);
+						case KeyState:
+							// cant have # inside of key
+							if (key == "") {
+								state = CommentState;
+							} else {
+								invalidChar(char);
+							}
 
+						case ValueState:
+							value += String.fromCharCode(char);
+					
+						default:
+							trace('switch');
+							state = CommentState;
+					}
 					continue;
 
 				default:
