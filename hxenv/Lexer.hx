@@ -75,12 +75,17 @@ class Lexer {
 		var continuedNextLine = false;
 
 		function finaliseTokens() {
+			// if a key is valid append the value to it else throw error
 			if (hasKey) {
 				appendValue();
 				hasKey = false;
 			} else if (keyBuf.toString() != "") {
 				throw("Invalid key no equals sign at line " + lineNo);
-			} else if (valueBuf.toString() != "") {
+			} 
+
+			// append value for multi line
+			
+			if (valueBuf.toString() != "") {
 				appendValue();
 			}
 
@@ -99,6 +104,8 @@ class Lexer {
 			} else {
 				state = KeyState;
 			}
+
+			// append any comments
 
 			if (hasComment) {
 				appendComment();
@@ -122,12 +129,13 @@ class Lexer {
 			var char = nextChar();
 
 			switch (char) {
-				// when new line is found append the value or comment and then reset back to default state
+				// when new line is found append the value/comment/multiline tokens;
 				case '\n'.code:
 					finaliseTokens();
 
 					resetBuffers();
 
+					// reset bools
 					hasComment = false;
 					hasKey = false;
 
