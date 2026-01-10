@@ -98,7 +98,7 @@ class Lexer {
 						hasKey = false;
 					} 
 
-					if (state == CommentState) {
+					if (state == CommentState && hasComment) {
 						appendComment();
 						hasComment = false;
 					}
