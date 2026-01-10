@@ -90,6 +90,11 @@ class Lexer {
 				if (hasComment)
 					appendComment();
 
+				// append any commas before end
+				if (multiLines) {
+					appendMultiLine();
+				}
+
 				tokens.push(Eof);
 				
 				break;
@@ -100,8 +105,6 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or comment and then reset back to default state
 				case '\n'.code:
-
-					trace(valueBuf.toString());
 
 					if (hasKey) {
 						appendValue();
@@ -121,6 +124,7 @@ class Lexer {
 					if (multiLines) {
 						state = ValueState;
 						appendMultiLine();
+						multiLines = false;
 					} else {
 						state = KeyState;
 					}
@@ -189,29 +193,33 @@ class Lexer {
 					// peak ahead of the pos until reach new line
 					if (state != CommentState) {
 						var tempPos = pos;
-						var onlyNewLine = false;
-
+						
+						var onlyValidChar = true;
 						// create temp pos to peak ahead of the comma to check if the next is a newline
 						while (tempPos <= query.length){
+							onlyValidChar = true;
 							var tempChar = query.charAt(tempPos);
-							if (tempChar == "\n" || tempChar == " ") {
-								trace("found new line");
-								onlyNewLine = true;
+							trace(tempChar);
+							if (tempChar == "\n") {
+								onlyValidChar = true;
 								break;
-							} else {
-								trace("found not new line");
-								onlyNewLine = false;
-								break;
+							} else if(tempChar == " " || tempChar == "") {
+								tempPos++;
+								continue;
 							}
+							else {
+								throw ("Cant have comma in the middle of a line " + lineNo);
+								onlyValidChar = false;
+							}
+							
 						}
 
-						if(onlyNewLine) {
+						if(onlyValidChar) {
 							multiLines = true;
 						} else {
 							multiLines = false;
 						}
 
-						trace("found", multiLines);
 
 					}
 
