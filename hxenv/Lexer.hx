@@ -70,15 +70,19 @@ class Lexer {
 		while (true) {
 			// if reached end break loop;
 			if (this.pos >= query.length) {
-				// when reached end add the end value;
+				// when reached finalise
+
+				// should i add empty key?
+				// if (key != "") {
+				// 	appendKey();
+				// }
+				
 				if (value != "") {
-					var trimmedValue:String = StringTools.trim(value);
-					cache.push(Value(trimmedValue));
+					appendValue();
 				}
 
 				if (comment != "") {
-					final trimmedComment:String = StringTools.trim(comment);
-					cache.push(Comment(trimmedComment));
+					appendComment();
 				}
 
 				cache.push(Eof);
