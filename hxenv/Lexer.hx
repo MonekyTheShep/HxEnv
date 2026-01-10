@@ -144,12 +144,8 @@ class Lexer {
 							}
 
 						case ValueState:
-							// cant have # before value
-							if (value != "") {
-								state = CommentState;
-							} else {
-								invalidChar(char);
-							}
+							state = CommentState;
+							
 							
 
 						default:
