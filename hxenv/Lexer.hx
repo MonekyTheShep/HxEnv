@@ -76,7 +76,7 @@ class Lexer {
 			if (this.pos >= query.length) {
 				// when reached finalise
 				// add value if it has key
-				if (hasKey && keyBuf.toString() != "") {
+				if (hasKey) {
 					appendValue();
 				} else if(keyBuf.toString() != ""){
 					throw ("Invalid key no equals sign at line " + lineNo);
@@ -99,7 +99,9 @@ class Lexer {
 					if (state == ValueState && hasKey) {
 						appendValue();
 						hasKey = false;
-					} 
+					}  else if(keyBuf.toString() != ""){
+						throw ("Invalid key no equals sign at line " + lineNo);
+					}
 
 					if (state == CommentState && hasComment) {
 						appendComment();
