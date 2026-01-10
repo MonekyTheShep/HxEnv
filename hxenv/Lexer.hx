@@ -153,7 +153,7 @@ class Lexer {
 							commentBuf.addChar(char);
 						case KeyState:
 							// cant have # inside of key
-							if (keyBuf.toString()== "") {
+							if (keyBuf.toString() == "") {
 								hasComment = true;
 								state = CommentState;
 							} else {
@@ -175,7 +175,7 @@ class Lexer {
 						|| (char == ".".code)) {
 						switch (state) {
 							case KeyState:
-								keyBuf.addChar(char);
+								if (char != " ".code) keyBuf.addChar(char);
 							case ValueState:
 								valueBuf.addChar(char);
 							case CommentState:
