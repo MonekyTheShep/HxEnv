@@ -227,11 +227,7 @@ class Lexer {
 							}
 						}
 
-						if (onlyValidChar) {
-							multiLines = true;
-						} else {
-							multiLines = false;
-						}
+						multiLines = onlyValidChar;
 					} else {
 						commentBuf.addChar(char);
 					}
