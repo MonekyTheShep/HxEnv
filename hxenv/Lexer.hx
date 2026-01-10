@@ -68,7 +68,7 @@ class Lexer {
 
 	function tokenize() {
 		var hasKey = false;
-		var hasEqual = false;
+		trace(lineNo);
 
 		while (true) {
 			// if reached end break loop;
@@ -103,10 +103,11 @@ class Lexer {
 
 					// default state is key state
 					state = KeyState;
-
+					key = "";
+					
 					tokens.push(Newline);
 					lineNo++;
-					//trace(lineNo);
+					trace(lineNo);
 
 					continue;
 
@@ -134,10 +135,11 @@ class Lexer {
 					continue;
 
 				// switch to comment state
+				// currently if there is no = after a key itll continue using everything after it as a key
 				case '#'.code:
 					switch (state) {
 						case CommentState:
-							comment += String.fromCharCode(char);
+							state = CommentState;
 						case KeyState:
 							// cant have # inside of key
 							if (key == "") {
@@ -157,7 +159,7 @@ class Lexer {
 						|| (char >= '0'.code && char <= '9'.code)
 						|| (char == "_".code)
 						|| (char == "#".code)
-						|| (char == " ".code)) {
+						|| (char == " ".code)){
 						switch (state) {
 							case KeyState:
 								key += String.fromCharCode(char);
