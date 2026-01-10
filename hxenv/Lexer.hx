@@ -83,7 +83,7 @@ class Lexer {
 					appendComment();
 				}
 
-				cache.push(Eof);
+				tokens.push(Eof);
 				break;
 			}
 
@@ -119,7 +119,7 @@ class Lexer {
 
 					state = KeyState;
 
-					cache.push(Newline);
+					tokens.push(Newline);
 					continue;
 
 				// switch to comment state
@@ -148,20 +148,20 @@ class Lexer {
 
 	function appendComment() {
 		final trimmedComment:String = StringTools.trim(comment);
-		cache.push(Comment(trimmedComment));
+		tokens.push(Comment(trimmedComment));
 		comment = "";
 	}
 
 	function appendKey() {
 		final trimmedKey:String = StringTools.trim(key);
-		cache.push(Key(trimmedKey));
-		cache.push(Equals);
+		tokens.push(Key(trimmedKey));
+		tokens.push(Equals);
 		key = "";
 	}
 
 	function appendValue() {
 		final trimmedValue:String = StringTools.trim(value);
-		cache.push(Value(trimmedValue));
+		tokens.push(Value(trimmedValue));
 		value = "";
 	}
 }
