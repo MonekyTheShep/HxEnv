@@ -1,0 +1,10 @@
+# Source folder
+-cp src
+
+# Include your library
+
+# Main entry point
+-main Main
+
+# Interpreter target
+--interp
