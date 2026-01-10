@@ -192,14 +192,15 @@ class Lexer {
 					// if , after comment ignore it i also need to add check for if its at end of line
 					// peak ahead of the pos until reach new line
 					if (state != CommentState) {
-						var tempPos = pos;
+						var tempPos:Int = pos;
 						
-						var onlyValidChar = true;
+						var onlyValidChar:Bool = true;
 						// create temp pos to peak ahead of the comma to check if the next is a newline
 						while (tempPos <= query.length){
+
 							onlyValidChar = true;
 							var tempChar = query.charAt(tempPos);
-							trace(tempChar);
+
 							if (tempChar == "\n") {
 								onlyValidChar = true;
 								break;
@@ -219,8 +220,6 @@ class Lexer {
 						} else {
 							multiLines = false;
 						}
-
-
 					}
 
 				// append characters to buffers
