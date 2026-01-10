@@ -70,7 +70,8 @@ class Lexer {
 			if (this.pos >= query.length) {
 				// when reached end add the end value;
 				if (value != "") {
-					cache.push(Value(value));
+					var trimmedValue:String = StringTools.trim(value);
+					cache.push(Value(trimmedValue));
 				}
 				cache.push(Eof);
 				break;
@@ -82,21 +83,25 @@ class Lexer {
 				// switch the state to value when found "="
 				case '='.code:
 					state = ValueState;
-					cache.push(Key(key));
+					var trimmedKey:String = StringTools.trim(key);
+					cache.push(Key(trimmedKey));
 					cache.push(Equals);
 					key = "";
+					continue;
 
 				// switch the state to key state
 				case '\n'.code:
 					state = KeyState;
-					cache.push(Value(value));
+					var trimmedValue:String = StringTools.trim(value);
+					cache.push(Value(trimmedValue));
 					cache.push(Newline);
 					value = "";
-
+					continue;
 				
 				// switch to comment state
 				case '#'.code:
-					state = CommentState;			
+					state = CommentState;	
+					continue;		
 
 				default:
 					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code )) {
