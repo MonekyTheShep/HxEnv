@@ -144,7 +144,8 @@ class Lexer {
 							}
 
 						case ValueState:
-							value += String.fromCharCode(char);
+							// cant have # inside of value
+							invalidChar(char);
 
 						default:
 							trace('switch');
