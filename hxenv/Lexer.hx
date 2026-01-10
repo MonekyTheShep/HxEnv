@@ -115,12 +115,12 @@ class Lexer {
 						if (state == KeyState && key != "") {
 							appendKey();
 							hasKey = true;
+						}  else if (state == ValueState) {
+							// append any other = to value
+							value += String.fromCharCode(char);
 						} else if (key == "") {
 							trace("empty key");
 							hasKey = false;
-						} else if (state == ValueState) {
-							// append any other = to value
-							value += String.fromCharCode(char);
 						}
 
 						state = ValueState;
