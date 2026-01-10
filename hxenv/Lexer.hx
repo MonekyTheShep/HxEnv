@@ -96,14 +96,14 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or comment and then reset back to default state
 				case '\n'.code:
-					if (state == ValueState && hasKey) {
+					if (hasKey) {
 						appendValue();
 						hasKey = false;
-					}  else if (state == ValueState && keyBuf.toString() != ""){
+					}  else if (keyBuf.toString() != ""){
 						throw ("Invalid key no equals sign at line " + lineNo);
 					}
 
-					if (state == CommentState && hasComment) {
+					if (hasComment) {
 						appendComment();
 						hasComment = false;
 					}
