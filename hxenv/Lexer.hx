@@ -87,7 +87,6 @@ class Lexer {
 
 			var char = nextChar();
 
-			trace(state);
 
 			switch (char) {
 				// switch the state to value when found "="
@@ -145,6 +144,8 @@ class Lexer {
 									comment += String.fromCharCode(char);
 							}
 						
+					} else {
+						invalidChar(char);
 					}
 			}
 		}
@@ -178,5 +179,9 @@ class Lexer {
 		var r = new EReg(whiteSpaceCharacter, "g");
 
 		return r.match(char);
+	}
+
+	function invalidChar(char) {
+		trace("Unexpected char:" + String.fromCharCode(char)) ;
 	}
 }
