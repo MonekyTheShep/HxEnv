@@ -120,7 +120,13 @@ class Lexer {
 
 				// switch to comment state
 				case '#'.code:
-					state = CommentState;
+					if (state == KeyState || key != "") {
+						state = CommentState;
+					} else if (state == ValueState) {
+						value += String.fromCharCode(char);
+					}
+
+					
 					continue;
 
 				default:
