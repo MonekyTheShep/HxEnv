@@ -85,6 +85,7 @@ class Lexer {
 					appendComment();
 
 				tokens.push(Eof);
+				
 				break;
 			}
 
@@ -129,7 +130,7 @@ class Lexer {
 							// append any other = to value
 							valueBuf.addChar(char);
 						} else if (keyBuf.toString() == "") {
-							trace("empty key");
+							throw ("Cant have empty key at line" + lineNo);
 							hasKey = false;
 						}
 
