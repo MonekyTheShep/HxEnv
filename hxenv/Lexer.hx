@@ -3,6 +3,7 @@ package hxenv;
 enum Token {
 	Key(key:String);
 	Value(value:String);
+	Comment(value:String);
 	Equals;
 	Newline;
 	Eof;
@@ -32,6 +33,7 @@ class Lexer {
 	var state:LexerState = KeyState;
 	var key:String = "";
 	var value:String = "";
+	var comment:String = "";
 
 	public function new() {
 		idChar = [];
@@ -73,6 +75,12 @@ class Lexer {
 					var trimmedValue:String = StringTools.trim(value);
 					cache.push(Value(trimmedValue));
 				}
+
+				if (comment != "") {
+					final trimmedComment:String = StringTools.trim(comment);
+					cache.push(Comment(trimmedComment));
+				}
+
 				cache.push(Eof);
 				break;
 			}
@@ -82,21 +90,17 @@ class Lexer {
 			trace(state);
 
 			switch (char) {
-
 				// switch the state to value when found "="
 				case '='.code:
-					final trimmedKey:String = StringTools.trim(key);
+					
 					// if key state append key to cache
 					// if value state append equals to the value
 					if (state == KeyState || key != "") {
-						cache.push(Key(trimmedKey));
-						cache.push(Equals);
-						key = "";
+						appendKey();
 					} else if (state == ValueState) {
 						value += String.fromCharCode(char);
 					}
-					
-					
+
 					state = ValueState;
 					continue;
 
@@ -104,30 +108,33 @@ class Lexer {
 				case '\n'.code:
 					// push value before new line
 					if (state == ValueState || value != "") {
-						final trimmedValue:String = StringTools.trim(value);
-						cache.push(Value(trimmedValue));
-						value = "";
+						appendValue();
+					}
+
+					if (state == CommentState || comment != "") {
+						appendComment();
 					}
 
 					state = KeyState;
-					
+
 					cache.push(Newline);
 					continue;
-				
+
 				// switch to comment state
 				case '#'.code:
-					state = CommentState;	
-					continue;		
+					state = CommentState;
+					continue;
 
 				default:
-					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code )) {
+					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code)) {
 						if (state == KeyState) {
 							key += String.fromCharCode(char);
 						} else if (state == ValueState) {
 							value += String.fromCharCode(char);
+						} else if (state == CommentState) {
+							comment += String.fromCharCode(char);
 						}
 					}
-					
 			}
 		}
 		return;
@@ -135,5 +142,24 @@ class Lexer {
 
 	inline function nextChar() {
 		return StringTools.fastCodeAt(query, pos++);
+	}
+
+	function appendComment() {
+		final trimmedComment:String = StringTools.trim(comment);
+		cache.push(Comment(trimmedComment));
+		comment = "";
+	}
+
+	function appendKey() {
+		final trimmedKey:String = StringTools.trim(key);
+		cache.push(Key(trimmedKey));
+		cache.push(Equals);
+		key = "";
+	}
+
+	function appendValue() {
+		final trimmedValue:String = StringTools.trim(value);
+		cache.push(Value(trimmedValue));
+		value = "";
 	}
 }
