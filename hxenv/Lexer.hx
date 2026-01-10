@@ -99,7 +99,7 @@ class Lexer {
 					if (state == ValueState && hasKey) {
 						appendValue();
 						hasKey = false;
-					}  else if(keyBuf.toString() != ""){
+					}  else if (state == ValueState && keyBuf.toString() != ""){
 						throw ("Invalid key no equals sign at line " + lineNo);
 					}
 
@@ -127,13 +127,13 @@ class Lexer {
 					// append the key when = is found if its not empty
 					// if this a comment state ignore this and add to comment
 					if (state != CommentState) {
-						if (state == KeyState && keyBuf.toString() != "") {
+						if (state == KeyState && StringTools.trim(keyBuf.toString()) != "") {
 							appendKey();
 							hasKey = true;
 						} else if (state == ValueState) {
 							// append any other = to value
 							valueBuf.addChar(char);
-						} else if (keyBuf.toString() == "") {
+						} else if (StringTools.trim(keyBuf.toString()) == "") {
 							throw ("Cant have empty key at line " + lineNo);
 							hasKey = false;
 						}
@@ -153,7 +153,7 @@ class Lexer {
 							commentBuf.addChar(char);
 						case KeyState:
 							// cant have # inside of key
-							if (keyBuf.toString() == "") {
+							if (StringTools.trim(keyBuf.toString()) == "") {
 								hasComment = true;
 								state = CommentState;
 							} else {
