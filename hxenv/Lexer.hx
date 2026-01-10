@@ -81,7 +81,8 @@ class Lexer {
 				}
 
 				// append any comments before end
-				if (hasComment) appendComment();
+				if (hasComment)
+					appendComment();
 
 				tokens.push(Eof);
 				break;
@@ -92,11 +93,9 @@ class Lexer {
 			switch (char) {
 				// when new line is found append the value or comment and then reset back to default state
 				case '\n'.code:
-
 					if (hasKey) {
-							
-							appendValue();
-							hasKey = false;
+						appendValue();
+						hasKey = false;
 					} 
 
 					if (state == CommentState) {
@@ -124,7 +123,7 @@ class Lexer {
 						if (state == KeyState && key != "") {
 							appendKey();
 							hasKey = true;
-						}  else if (state == ValueState) {
+						} else if (state == ValueState) {
 							// append any other = to value
 							value += String.fromCharCode(char);
 						} else if (key == "") {
@@ -140,7 +139,6 @@ class Lexer {
 					continue;
 
 				// switch to comment state
-				// currently if there is no = after a key itll continue using everything after it as a key
 				case '#'.code:
 					switch (state) {
 						case CommentState:
@@ -156,7 +154,7 @@ class Lexer {
 
 						case ValueState:
 							hasComment = true;
-							state = CommentState;	
+							state = CommentState;
 					}
 					continue;
 
@@ -168,7 +166,8 @@ class Lexer {
 						|| (char == "#".code)
 						|| (char == '"'.code)
 						|| (char == "'".code)
-						|| (char == " ".code)){
+						|| (char == " ".code)
+						|| (char == ".".code)) {
 						switch (state) {
 							case KeyState:
 								key += String.fromCharCode(char);
@@ -192,7 +191,6 @@ class Lexer {
 	function appendComment() {
 		tokens.push(Comment(comment));
 		comment = "";
-		
 	}
 
 	function appendKey() {
@@ -202,16 +200,13 @@ class Lexer {
 		key = "";
 	}
 
-
 	// quotation handling
 
 	function appendValue() {
-		
 		final trimmedValue:String = StringTools.trim(value);
-		
+
 		tokens.push(Value(trimmedValue));
 		value = "";
-		
 	}
 
 	function isWhiteSpace(char:String):Bool {
