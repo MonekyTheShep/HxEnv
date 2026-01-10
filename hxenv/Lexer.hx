@@ -96,7 +96,7 @@ class Lexer {
 					if (state == CommentState) {
 						appendComment();
 					} else if (state == ValueState) {
-						if (hasKey && value != "") {
+						if (hasKey) {
 							appendValue();
 						}
 					}
@@ -137,14 +137,15 @@ class Lexer {
 					// if line starts with # set state to comment
 					if (startLinePos == pos) {
 						state = CommentState;
+					} else if (state == ValueState) {
+						// else append all # to value state
+						value += String.fromCharCode(char);
+					} else if (state == KeyState) {
+						// cant have # in key
+						invalidChar(char);
 					} else {
-						if (state == ValueState) {
-							// else append all # to value state
-							value += String.fromCharCode(char);
-						} else if (state == KeyState) {
-							// cant have # in key
-							invalidChar(char);
-						}
+						// append any # not at start to comment
+						comment += String.fromCharCode(char);
 					}
 
 					continue;
