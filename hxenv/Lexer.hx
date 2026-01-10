@@ -76,8 +76,10 @@ class Lexer {
 			if (this.pos >= query.length) {
 				// when reached finalise
 				// add value if it has key
-				if (hasKey) {
+				if (hasKey && keyBuf.toString() != "") {
 					appendValue();
+				} else if(keyBuf.toString() != ""){
+					throw ("Invalid key no equals sign at line " + lineNo);
 				}
 
 				// append any comments before end
@@ -130,7 +132,7 @@ class Lexer {
 							// append any other = to value
 							valueBuf.addChar(char);
 						} else if (keyBuf.toString() == "") {
-							throw ("Cant have empty key at line" + lineNo);
+							throw ("Cant have empty key at line " + lineNo);
 							hasKey = false;
 						}
 
