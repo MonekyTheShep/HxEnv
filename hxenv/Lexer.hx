@@ -67,8 +67,6 @@ class Lexer {
 	}
 
 	function tokenize() {
-		var startLinePos = 1;
-
 		var hasKey = false;
 
 		while (true) {
@@ -90,7 +88,7 @@ class Lexer {
 			var char = nextChar();
 
 			switch (char) {
-				// when new line is found append the value or key and then reset back to default state
+				// when new line is found append the value or comment and then reset back to default state
 				case '\n'.code:
 					if (state == CommentState) {
 						appendComment();
@@ -107,7 +105,6 @@ class Lexer {
 					lineNo++;
 					trace(lineNo);
 
-					startLinePos = pos + 1;
 					continue;
 
 				// switch the state to value when found "="
