@@ -53,7 +53,6 @@ class Lexer {
 	public function lex(query:String):Array<Token> {
 		this.query = query;
 		this.pos = 0;
-		this.lineNo = 0;
 
 		// loop through chars appending tokens until no more
 		tokenize();
