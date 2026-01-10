@@ -68,13 +68,14 @@ class Lexer {
 
 	function tokenize() {
 		var hasKey = false;
+		var hasEqual = false;
 
 		while (true) {
 			// if reached end break loop;
 			if (this.pos >= query.length) {
 				// when reached finalise
 				// add value if it has key
-				if (hasKey && value != "") {
+				if (hasKey) {
 					appendValue();
 				}
 
@@ -95,15 +96,15 @@ class Lexer {
 					} else if (state == ValueState) {
 						if (hasKey) {
 							appendValue();
-						}
+							hasKey = false;
+						} 
 					}
-
 					// default state is key state
 					state = KeyState;
 
 					tokens.push(Newline);
 					lineNo++;
-					trace(lineNo);
+					//trace(lineNo);
 
 					continue;
 
@@ -144,13 +145,7 @@ class Lexer {
 							}
 
 						case ValueState:
-							state = CommentState;
-							
-							
-
-						default:
-							trace('switch');
-							state = CommentState;
+							state = CommentState;	
 					}
 					continue;
 
