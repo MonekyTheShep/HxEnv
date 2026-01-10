@@ -76,7 +76,10 @@ class Lexer {
 			// if reached end break loop;
 			if (this.pos >= query.length) {
 				// when reached finalise
-				appendValue();
+				if (hasKey) {
+					appendValue();
+				}
+				
 				appendComment();
 
 				tokens.push(Eof);
@@ -175,9 +178,12 @@ class Lexer {
 	}
 
 	function appendComment() {
-		final trimmedComment:String = StringTools.trim(comment);
-		tokens.push(Comment(trimmedComment));
-		comment = "";
+		if (comment != "") {
+			final trimmedComment:String = StringTools.trim(comment);
+			tokens.push(Comment(trimmedComment));
+			comment = "";
+		}
+
 	}
 
 	function appendKey() {
