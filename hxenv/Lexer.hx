@@ -68,6 +68,7 @@ class Lexer {
 
 	function tokenize() {
 		var hasKey = false;
+		var hasComment = false;
 		trace(lineNo);
 
 		while (true) {
@@ -80,7 +81,7 @@ class Lexer {
 				}
 
 				// append any comments before end
-				appendComment();
+				if (hasComment) appendComment();
 
 				tokens.push(Eof);
 				break;
@@ -99,12 +100,14 @@ class Lexer {
 
 					if (state == CommentState) {
 						appendComment();
+						hasComment = false;
 					}
 
 					// default state is key state
 					state = KeyState;
 					key = "";
 					value = "";
+					hasComment = false;
 
 					tokens.push(Newline);
 					lineNo++;
@@ -142,6 +145,7 @@ class Lexer {
 						case CommentState:
 							state = CommentState;
 						case KeyState:
+							hasComment = true;
 							// cant have # inside of key
 							if (key == "") {
 								state = CommentState;
@@ -150,6 +154,7 @@ class Lexer {
 							}
 
 						case ValueState:
+							hasComment = true;
 							state = CommentState;	
 					}
 					continue;
@@ -160,6 +165,8 @@ class Lexer {
 						|| (char >= '0'.code && char <= '9'.code)
 						|| (char == "_".code)
 						|| (char == "#".code)
+						|| (char == '"'.code)
+						|| (char == '"'.code)
 						|| (char == " ".code)){
 						switch (state) {
 							case KeyState:
