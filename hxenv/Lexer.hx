@@ -32,6 +32,8 @@ class Lexer {
 	var value:String = "";
 	var comment:String = "";
 
+	final whiteSpaceCharacter:String = "\\s+";
+
 	public function new() {
 		idChar = [];
 
@@ -129,14 +131,19 @@ class Lexer {
 				// 	continue;
 
 				default:
-					if ((char >= 'A'.code && char <= 'Z'.code) || (char >= 'a'.code && char <= 'z'.code) || (char >= '0'.code && char <= '9'.code) || (char == "_".code)) {
-						switch (state) {
-							case KeyState:
-								key += String.fromCharCode(char);
-							case ValueState:
-								value += String.fromCharCode(char);
-							case CommentState:
-								comment += String.fromCharCode(char);
+					if ((char >= 'A'.code && char <= 'Z'.code)
+						|| (char >= 'a'.code && char <= 'z'.code)
+						|| (char >= '0'.code && char <= '9'.code)
+						|| (char == "_".code)) {
+						if (!isWhiteSpace(String.fromCharCode(char))) {
+							switch (state) {
+								case KeyState:
+									key += String.fromCharCode(char);
+								case ValueState:
+									value += String.fromCharCode(char);
+								case CommentState:
+									comment += String.fromCharCode(char);
+							}
 						}
 					}
 			}
@@ -165,5 +172,11 @@ class Lexer {
 		final trimmedValue:String = StringTools.trim(value);
 		tokens.push(Value(trimmedValue));
 		value = "";
+	}
+
+	function isWhiteSpace(char:String):Bool {
+		var r = new EReg(whiteSpaceCharacter, "g");
+
+		return r.match(char);
 	}
 }

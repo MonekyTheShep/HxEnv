@@ -1,8 +1,11 @@
+import sys.io.File;
 import hxenv.Lexer;
+
 class Main {
     static function main() {
         var lexer:Lexer = new Lexer();
 
-        trace(lexer.lex("GAY123=PENIS\nNIGGA321=TEST\nYAY=ENV\n"));
+        var content:String = File.getContent("test.env");
+        trace(lexer.lex(content));
     }
 }
