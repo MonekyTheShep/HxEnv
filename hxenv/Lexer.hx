@@ -29,6 +29,9 @@ class Lexer {
 	// store current token from char
 	var tokens:Array<Token> = [];
 
+	// store line
+	var cache:Array<Token> = [];
+
 	var state:LexerState = KeyState;
 	var key:String = "";
 	var value:String = "";
@@ -67,23 +70,14 @@ class Lexer {
 	function tokenize() {
 		var startLinePos = 1;
 
+		var hasKey = false;
+
 		while (true) {
 			// if reached end break loop;
 			if (this.pos >= query.length) {
 				// when reached finalise
-
-				// should i add empty key?
-				// if (key != "") {
-				// 	appendKey();
-				// }
-
-				if (value != "") {
-					appendValue();
-				}
-
-				if (comment != "") {
-					appendComment();
-				}
+				appendValue();
+				appendComment();
 
 				tokens.push(Eof);
 				break;
@@ -92,33 +86,15 @@ class Lexer {
 			var char = nextChar();
 
 			switch (char) {
-				// switch the state to value when found "="
-				case '='.code:
-					// append the key when = is found if its not empty
-					// if this a comment state ignore this and add to comment
-					if (state != CommentState) {
-						if (state == KeyState && key != "") {
-							appendKey();
-						} else if (state == ValueState) {
-							value += String.fromCharCode(char);
-						}
-
-						state = ValueState;
-					} else {
-						comment += String.fromCharCode(char);
-					}
-
-					continue;
 
 				// switch the state to key state when newline found
 				case '\n'.code:
-					// push value before new line
-					if (state == ValueState && value != "") {
-						appendValue();
-					}
-
-					if (state == CommentState && comment != "") {
+					if (state == CommentState) {
 						appendComment();
+					} else if (state == ValueState ) {
+						if (hasKey) {
+							appendValue();
+						}
 					}
 
 					// default state is key state
@@ -127,6 +103,31 @@ class Lexer {
 					tokens.push(Newline);
 					
 					startLinePos = pos + 1;
+					continue;
+
+				// switch the state to value when found "="
+				case '='.code:
+					// append the key when = is found if its not empty
+					// if this a comment state ignore this and add to comment
+					if (state != CommentState) {	
+						if (state == KeyState && key != "") {
+							appendKey();
+							hasKey = true;
+						} else if (state == ValueState) {
+							// append any other = to value
+							value += String.fromCharCode(char);
+						} else if (key == "") {
+							trace("empty key");
+							hasKey = false;
+						}
+						
+						
+
+						state = ValueState;
+					} else {
+						comment += String.fromCharCode(char);
+					}
+
 					continue;
 
 				// switch to comment state
@@ -145,7 +146,7 @@ class Lexer {
 						
 					}
 
-				// 	continue;
+					continue;
 
 				default:
 					if ((char >= 'A'.code && char <= 'Z'.code)
@@ -187,9 +188,13 @@ class Lexer {
 	}
 
 	function appendValue() {
-		final trimmedValue:String = StringTools.trim(value);
-		tokens.push(Value(trimmedValue));
-		value = "";
+		if (value != "") {
+			final trimmedValue:String = StringTools.trim(value);
+			tokens.push(Value(trimmedValue));
+			value = "";
+		}
+
+		
 	}
 
 	function isWhiteSpace(char:String):Bool {
