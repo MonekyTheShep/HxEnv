@@ -162,9 +162,7 @@ class Lexer {
 					continue;
 
 				default:
-					if ((char >= 'A'.code && char <= 'Z'.code)
-						|| (char >= 'a'.code && char <= 'z'.code)
-						|| (char >= '0'.code && char <= '9'.code)
+					if ((idChar[char])
 						|| (char == "_".code)
 						|| (char == '"'.code)
 						|| (char == "'".code)
