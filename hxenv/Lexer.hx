@@ -1,7 +1,5 @@
 package hxenv;
 
-import haxe.Rest;
-
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Value(value:String); // 𝑥 = 𝑦
@@ -35,6 +33,8 @@ class Lexer {
 	var tokenQueue:Array<Token> = [];
 
 	var done:Bool = false;
+
+	// flags for each line
 	var hasComment:Bool = false;
 	var hasKey:Bool = false;
 
@@ -81,21 +81,23 @@ class Lexer {
 		function addTokenQueue() {
 			// debug lines
 			if (keyBuf.length != 0) {
-				//trace("Key: ", keyBuf.toString());
-				//trace("Value: ", valueBuf.toString());
+				// trace("Key: ", keyBuf.toString());
+				// trace("Value: ", valueBuf.toString());
 			}
 
 			// make functions to handle key, value
 
 			if (keyBuf.length > 0) {
-				tokenQueue.push(Key(keyBuf.toString()));
+				final trimmedKey:String = StringTools.trim(keyBuf.toString());
+				tokenQueue.push(Key(trimmedKey));
 				tokenQueue.push(Equals);
-				tokenQueue.push(Value(valueBuf.toString()));
+				final trimmedValue:String = StringTools.trim(valueBuf.toString());
+				tokenQueue.push(Value(trimmedValue));
 			} else if (!hasComment) {
 				throw "Cant have empty key";
 			}
 
-            if (commentBuf.length != 0) {
+			if (commentBuf.length != 0) {
 				tokenQueue.push(Comment(commentBuf.toString()));
 				hasComment = false;
 			}
@@ -126,9 +128,9 @@ class Lexer {
 				case '\n'.code:
 					lineNo++;
 
-                    if (state == ValueState || state == CommentState) {
-                        addTokenQueue();
-                    }
+					if (state != KeyState) {
+						addTokenQueue();
+					}
 
 					state = KeyState;
 
@@ -137,14 +139,35 @@ class Lexer {
 					tokenQueue.push(Newline);
 
 				case "=".code:
-					state = ValueState;
+					if (state == KeyState) {
+						state = ValueState;
+					} else if (state == ValueState) {
+						valueBuf.addChar(char);
+					} else if (state == CommentState) {
+						commentBuf.addChar(char);
+					}
 
 				case '"'.code, "'".code:
 					// look until it finds a closing quote or \n
+					// right now ill just make it throw an error i cant be asked to handle it
 
 				case "#".code:
-					hasComment = true;
-					state = CommentState;
+					// need to add comment validation
+					if (state == CommentState) {
+						commentBuf.addChar(char);
+					} else if (state == KeyState) {
+						// cant have # inside of key
+						if (keyBuf.toString() == "") {
+							hasComment = true;
+							state = CommentState;
+						} else {
+							throw "You idiot you cant have a # before the value.";
+						}
+					} else if (state == ValueState) {
+                        hasComment = true;
+						state = CommentState;
+                    }
+
 				// look until it finds the end line
 
 				case ",".code:
