@@ -91,12 +91,11 @@ class Lexer {
 				trace("Key: ", keyBuf.toString());
 				trace("Value: ", valueBuf.toString());
 			}
-
+		
 			// if the key is valid emit the key and value
 			if (hasKey) {
 				emitKeyAndValue();
 			}
-
 			// for multiline support
 			// if there is a multiline emit value on its own
 
@@ -119,15 +118,20 @@ class Lexer {
 			}
 
 			if (this.pos >= query.length) {
-				// add remaining tokens
+				// add remaining tokens when reached end line
 
 				if (done == true) {
 					return Eof;
 				} else {
 					done = true;
+					if (keyBuf.length > 0 && !hasKey) {
+						throw "No equals sign after key, cant build KEY=VALUE";
+					}
+
 					if (state == CommentState || state == ValueState) {
 						addTokenQueue();
 					}
+					
 				}
 			}
 
@@ -136,6 +140,12 @@ class Lexer {
 			switch (char) {
 				case '\n'.code:
 					lineNo++;
+
+					trace(keyBuf.toString());
+
+					if (keyBuf.length > 0 && !hasKey) {
+						throw "No equals sign after key, cant build KEY=VALUE";
+					}
 
 					// i need add detection for when a key is empty
 					if (state == CommentState || state == ValueState) {
@@ -197,7 +207,8 @@ class Lexer {
 				// look until it finds the end line
 
 				case ",".code:
-					if (state == ValueState) {
+					trace(state);
+					if (state == ValueState || state == KeyState) {
 						var tempPos:Int = pos;
 						// peak ahead system until reached valid character
 
