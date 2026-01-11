@@ -8,13 +8,15 @@ class Env {
     }
 
     public function set(key:String, value:String):Void {
-        if value == null return;
+        if (value == null) return;
         values.set(key, value);
     }
 
     public function get(key:String):String {
         if (values.exists(key)) {
             return values.get(key);
+        } else {
+            return "";
         }
     }
 
