@@ -141,8 +141,6 @@ class Lexer {
 				case '\n'.code:
 					lineNo++;
 
-					trace(keyBuf.toString());
-
 					if (keyBuf.length > 0 && !hasKey) {
 						throw "No equals sign after key, cant build KEY=VALUE";
 					}
