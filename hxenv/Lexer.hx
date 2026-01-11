@@ -36,6 +36,7 @@ class Lexer {
 
 	var done:Bool = false;
 	var hasComment:Bool = false;
+	var hasKey:Bool = false;
 
 	public function new() {
 		idChar = [];
@@ -55,9 +56,9 @@ class Lexer {
 		}
 	}
 
-	public function lex(q:String):Array<Token> {
+	public function lex(query:String):Array<Token> {
 		// normalise new line between windows and unix systems
-		this.query = StringTools.replace(q, "\r\n", "\n");
+		this.query = StringTools.replace(query, "\r\n", "\n");
 		this.pos = 0;
 		this.lineNo = 1;
 
@@ -84,21 +85,15 @@ class Lexer {
 				trace("Value: ", valueBuf.toString());
 			}
 
-			// make functions to handle key, value, comments
+			// make functions to handle key, value
 
 			if (keyBuf.length > 0) {
 				tokenQueue.push(Key(keyBuf.toString()));
 				tokenQueue.push(Equals);
 				tokenQueue.push(Value(valueBuf.toString()));
-			} else if (!hasComment){
-                throw "Cant have empty key";
-            }
-
-			if (commentBuf.length > 0) {
-				tokenQueue.push(Comment(commentBuf.toString()));
-				hasComment = false;
+			} else if (!hasComment) {
+				throw "Cant have empty key";
 			}
-
 		}
 
 		while (true) {
@@ -114,17 +109,9 @@ class Lexer {
 					return Eof;
 				} else {
 					done = true;
-                    if (state == ValueState) {
-					    addTokenQueue();
-                    } else {
-                        return Newline;
-                    }
-
-					resetBuffers();
-				}
-
-				if (tokenQueue.length > 0) {
-					return tokenQueue.shift();
+					if (state == ValueState) {
+						addTokenQueue();
+					}
 				}
 			}
 
@@ -132,19 +119,23 @@ class Lexer {
 
 			switch (char) {
 				case '\n'.code:
+					lineNo++;
+
                     if (state == ValueState) {
                         addTokenQueue();
-                    }  else {
-                        return Newline;
                     }
-					
+
+					state = KeyState;
+
+					trace(commentBuf.length);
+					if (commentBuf.length != 0) {
+						tokenQueue.push(Comment(commentBuf.toString()));
+						hasComment = false;
+					}
 
 					resetBuffers();
 
-					lineNo++;
-                    
-                    state = KeyState;
-
+					tokenQueue.push(Newline);
 
 				case "=".code:
 					state = ValueState;
@@ -162,12 +153,7 @@ class Lexer {
 
 				default:
 					if (char != null) {
-						if ((idChar[char]) 
-                            || (char == "_".code) 
-                            || (char == '"'.code) 
-                            || (char == "'".code) 
-                            || (char == " ".code) 
-                            || (char == ".".code)) {
+						if ((idChar[char]) || (char == "_".code) || (char == '"'.code) || (char == "'".code) || (char == " ".code) || (char == ".".code)) {
 							switch state {
 								case KeyState:
 									keyBuf.addChar(char);
