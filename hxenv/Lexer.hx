@@ -81,8 +81,8 @@ class Lexer {
 		function addTokenQueue() {
 			// debug lines
 			if (keyBuf.length != 0) {
-				trace("Key: ", keyBuf.toString());
-				trace("Value: ", valueBuf.toString());
+				//trace("Key: ", keyBuf.toString());
+				//trace("Value: ", valueBuf.toString());
 			}
 
 			// make functions to handle key, value
@@ -93,6 +93,11 @@ class Lexer {
 				tokenQueue.push(Value(valueBuf.toString()));
 			} else if (!hasComment) {
 				throw "Cant have empty key";
+			}
+
+            if (commentBuf.length != 0) {
+				tokenQueue.push(Comment(commentBuf.toString()));
+				hasComment = false;
 			}
 		}
 
@@ -121,17 +126,11 @@ class Lexer {
 				case '\n'.code:
 					lineNo++;
 
-                    if (state == ValueState) {
+                    if (state == ValueState || state == CommentState) {
                         addTokenQueue();
                     }
 
 					state = KeyState;
-
-					trace(commentBuf.length);
-					if (commentBuf.length != 0) {
-						tokenQueue.push(Comment(commentBuf.toString()));
-						hasComment = false;
-					}
 
 					resetBuffers();
 
