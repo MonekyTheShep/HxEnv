@@ -206,7 +206,7 @@ class Lexer {
 						var onlyValidChar:Bool = true;
 
 						// create temp pos to peak ahead of the comma to check if the next is a newline
-						while (tempPos <= query.length) {
+						while (tempPos < query.length) {
 							onlyValidChar = true;
 							var tempChar = query.charAt(tempPos);
 
