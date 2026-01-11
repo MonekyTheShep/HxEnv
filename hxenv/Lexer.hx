@@ -87,19 +87,18 @@ class Lexer {
 				// trace("Value: ", valueBuf.toString());
 			}
 
-			// make functions to handle key, value
 
-			if (keyBuf.length > 0) {
+			// make functions to handle key, value
+			if (hasKey) {
 				final trimmedKey:String = StringTools.trim(keyBuf.toString());
 				tokenQueue.push(Key(trimmedKey));
 				tokenQueue.push(Equals);
 				final trimmedValue:String = StringTools.trim(valueBuf.toString());
 				tokenQueue.push(Value(trimmedValue));
-			} else if (!hasComment) {
-				throw "Cant have empty key";
-			}
+                hasKey = false;
+			} 
 
-			if (commentBuf.length != 0) {
+			if (hasComment) {
 				tokenQueue.push(Comment(commentBuf.toString()));
 				hasComment = false;
 			}
@@ -143,6 +142,7 @@ class Lexer {
 				case "=".code:
 					if (state == KeyState) {
 						state = ValueState;
+                        hasKey = true;
 					} else if (state == ValueState) {
 						throw "Cant have more than one equal sign";
 						// valueBuf.addChar(char);
