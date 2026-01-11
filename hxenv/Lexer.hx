@@ -24,6 +24,7 @@ class Lexer {
 	var pos:Int;
 	var lineNo:Int;
 	var state:LexerState = KeyState;
+	public var verboseMode:Bool = false;
 
 	// valid chars
 	var idChar:Array<Bool>;
@@ -86,9 +87,9 @@ class Lexer {
 		// use this to build line tokens
 		function addTokenQueue() {
 			// debug lines
-			if (keyBuf.length != 0) {
-				// trace("Key: ", keyBuf.toString());
-				// trace("Value: ", valueBuf.toString());
+			if (keyBuf.length != 0 && verboseMode == true) {
+				trace("Key: ", keyBuf.toString());
+				trace("Value: ", valueBuf.toString());
 			}
 
 			// if the key is valid emit the key and value
