@@ -1,7 +1,5 @@
 package hxenv;
 
-import haxe.ValueException;
-
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Value(value:String); // 𝑥 = 𝑦
@@ -13,10 +11,12 @@ enum Token {
 }
 
 // complex rules
+// add multiline state
 enum LexerState {
 	KeyState;
 	ValueState;
 	CommentState;
+	QuoteState;
 }
 
 class Lexer {
@@ -39,8 +39,10 @@ class Lexer {
 	// flags for each line
 	var hasComment:Bool = false;
 	var hasKey:Bool = false;
-    var multiLines = false;
-    var nextMultiLine = false;
+
+	// should i make it a state?
+	var multiLines = false;
+	var nextMultiLine = false;
 
 	public function new() {
 		idChar = [];
@@ -89,31 +91,23 @@ class Lexer {
 				// trace("Value: ", valueBuf.toString());
 			}
 
-            
-			// make functions to handle key, value
+			// if the key is valid emit the key and value
 			if (hasKey) {
-				final trimmedKey:String = StringTools.trim(keyBuf.toString());
-				tokenQueue.push(Key(trimmedKey));
-				tokenQueue.push(Equals);
-				final trimmedValue:String = StringTools.trim(valueBuf.toString());
-				tokenQueue.push(Value(trimmedValue));
-                hasKey = false;
-			}  
-            
-            // for multiline support
-
-            if (nextMultiLine && hasComment) {
-				throw "Cant have comment in multiline";
-			} else if (nextMultiLine) {
-                final trimmedValue:String = StringTools.trim(valueBuf.toString());
-				tokenQueue.push(Value(trimmedValue));
-				nextMultiLine = false;
+				emitKeyAndValue();
 			}
 
+			// for multiline support
+			// if there is a multiline emit value on its own
 
+			if (nextMultiLine && hasComment) {
+				throw "Cant have comment in multiline";
+			} else if (nextMultiLine) {
+				emitValue();
+			}
+
+			// if a comment is valid emit it
 			if (hasComment) {
-				tokenQueue.push(Comment(commentBuf.toString()));
-				hasComment = false;
+				emitComment();
 			}
 		}
 
@@ -142,23 +136,23 @@ class Lexer {
 				case '\n'.code:
 					lineNo++;
 
-                    // i need add detection for when a key is empty
+					// i need add detection for when a key is empty
 					if (state == CommentState || state == ValueState) {
-                       addTokenQueue();
+						addTokenQueue();
 					}
 
-                    
-                    // default state is key state
-                    if (multiLines) {
-                        trace("detected");
-                        state = ValueState;
-                        tokenQueue.push(Comma);
-                        multiLines = false;
-                        nextMultiLine = true;
-                    } else {
-                        state = KeyState;
-                    }
-				
+					// default state is key state
+					if (multiLines) {
+						state = ValueState;
+						tokenQueue.push(Comma);
+
+						multiLines = false;
+						// bool to make sure next line doesnt have comment
+						// you cant have comments on multilines
+						nextMultiLine = true;
+					} else {
+						state = KeyState;
+					}
 
 					resetBuffers();
 
@@ -166,11 +160,11 @@ class Lexer {
 
 				case "=".code:
 					if (state == KeyState) {
-                        if (keyBuf.length == 0) {
-                            throw "Cant have empty key";
-                        }
+						if (keyBuf.length == 0) {
+							throw "Cant have empty key";
+						}
 						state = ValueState;
-                        hasKey = true;
+						hasKey = true;
 					} else if (state == ValueState) {
 						throw "Cant have more than one equal sign";
 						// valueBuf.addChar(char);
@@ -202,13 +196,13 @@ class Lexer {
 				// look until it finds the end line
 
 				case ",".code:
-                    if (state == ValueState) {
-                        var tempPos:Int = pos;
-                        // peak ahead system until reached valid character
+					if (state == ValueState) {
+						var tempPos:Int = pos;
+						// peak ahead system until reached valid character
 
-                        var tempChar = query.charAt(tempPos);
-                        while (tempPos < query.length) {
-                            if (tempChar == "\n") {
+						var tempChar = query.charAt(tempPos);
+						while (tempPos < query.length) {
+							if (tempChar == "\n") {
 								break;
 							} else if (tempChar == " " || tempChar == "") {
 								tempPos++;
@@ -219,13 +213,13 @@ class Lexer {
 							} else {
 								throw("Invalid multi line at " + lineNo);
 							}
-                        }
+						}
 
-                        multiLines = true;
-                    } else if (state == CommentState) {
-                        commentBuf.addChar(char);
-                    }
-					// look until end
+						multiLines = true;
+					} else if (state == CommentState) {
+						commentBuf.addChar(char);
+					}
+				// look until end
 
 				default:
 					if (char != null) {
@@ -237,6 +231,7 @@ class Lexer {
 									valueBuf.addChar(char);
 								case CommentState:
 									commentBuf.addChar(char);
+								case QuoteState:
 							}
 						}
 					}
@@ -247,6 +242,28 @@ class Lexer {
 	inline function nextChar() {
 		return StringTools.fastCodeAt(query, pos++);
 	}
+
+	function emitKeyAndValue() {
+		final trimmedKey:String = StringTools.trim(keyBuf.toString());
+		tokenQueue.push(Key(trimmedKey));
+		tokenQueue.push(Equals);
+		final trimmedValue:String = StringTools.trim(valueBuf.toString());
+		tokenQueue.push(Value(trimmedValue));
+		hasKey = false;
+	}
+
+	function emitComment() {
+		tokenQueue.push(Comment(commentBuf.toString()));
+		hasComment = false;
+	}
+
+	function emitValue() {
+		final trimmedValue:String = StringTools.trim(valueBuf.toString());
+		tokenQueue.push(Value(trimmedValue));
+		nextMultiLine = false;
+	}
+
+	// buffers reset every line
 
 	function resetBuffers() {
 		keyBuf = new StringBuf();
