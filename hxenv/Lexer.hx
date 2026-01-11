@@ -141,7 +141,6 @@ class Lexer {
 			switch (char) {
 				case '\n'.code:
 					lineNo++;
-                    
 
                     // i need add detection for when a key is empty
 					if (state == CommentState || state == ValueState) {
@@ -159,8 +158,6 @@ class Lexer {
                     } else {
                         state = KeyState;
                     }
-                    
-
 				
 
 					resetBuffers();
