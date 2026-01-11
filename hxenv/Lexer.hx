@@ -25,23 +25,41 @@ class Lexer {
 	var lineNo:Int;
 	var state:LexerState = KeyState;
 
-    // buffers used because we have states for the lexer to add to these buffers
+	// valid chars
+	var idChar:Array<Bool>;
 
+	// buffers used because we have states for the lexer to add to these buffers
 	var keyBuf = new StringBuf();
 	var valueBuf = new StringBuf();
 	var commentBuf = new StringBuf();
 	var tokenQueue:Array<Token> = [];
 
 	var done:Bool = false;
-    var hasComment:Bool = false;
+	var hasComment:Bool = false;
 
-	public function new() {}
+	public function new() {
+		idChar = [];
+
+		// populate valid chars with bools at ascii positions
+
+		for (i in 'A'.code...'Z'.code + 1) {
+			idChar[i] = true;
+		}
+
+		for (i in 'a'.code...'z'.code + 1) {
+			idChar[i] = true;
+		}
+
+		for (i in '0'.code...'9'.code + 1) {
+			idChar[i] = true;
+		}
+	}
 
 	public function lex(q:String):Array<Token> {
 		// normalise new line between windows and unix systems
 		this.query = StringTools.replace(q, "\r\n", "\n");
 		this.pos = 0;
-        this.lineNo = 1;
+		this.lineNo = 1;
 
 		var result = [];
 		while (true) {
@@ -58,36 +76,33 @@ class Lexer {
 	}
 
 	function token() {
-        // use this to build line tokens
+		// use this to build line tokens
 		function addTokenQueue() {
-            // debug lines
-            if (keyBuf.length != 0) {
-                trace("Key: ", keyBuf.toString());
-			    trace("Value: ", valueBuf.toString());
-            }
-			
+			// debug lines
+			if (keyBuf.length != 0) {
+				trace("Key: ", keyBuf.toString());
+				trace("Value: ", valueBuf.toString());
+			}
 
-            // make functions to handle key, value, comments
+			// make functions to handle key, value, comments
 
-            if (keyBuf.length != 0) {
-                tokenQueue.push(Key(keyBuf.toString()));
-			    tokenQueue.push(Equals);
-			    tokenQueue.push(Value(valueBuf.toString()));
-            } else if (!hasComment){
-                throw "Empty Key";
+			if (keyBuf.length > 0) {
+				tokenQueue.push(Key(keyBuf.toString()));
+				tokenQueue.push(Equals);
+				tokenQueue.push(Value(valueBuf.toString()));
+			} else if (!hasComment){
+                throw "Cant have empty key";
             }
-			
-            if (commentBuf.length > 0) {
-                tokenQueue.push(Comment(commentBuf.toString()));
-                hasComment = false;
-            } 
-            
-			tokenQueue.push(Newline);
+
+			if (commentBuf.length > 0) {
+				tokenQueue.push(Comment(commentBuf.toString()));
+				hasComment = false;
+			}
 		}
 
 		while (true) {
 			if (tokenQueue.length > 0) {
-                // returns the first element so it builds the tokens in order.
+				// returns the first element so it builds the tokens in order.
 				return tokenQueue.shift();
 			}
 
@@ -97,14 +112,13 @@ class Lexer {
 				if (done == true) {
 					return Eof;
 				} else {
-
-                    done = true;
+					done = true;
 					addTokenQueue();
-					resetBuffers();
 
+					resetBuffers();
 				}
 
-                if (tokenQueue.length > 0) {
+				if (tokenQueue.length > 0) {
 					return tokenQueue.shift();
 				}
 			}
@@ -113,15 +127,15 @@ class Lexer {
 
 			switch (char) {
 				case '\n'.code:
+					state = KeyState;
+
 					addTokenQueue();
 
 					resetBuffers();
 
-                    lineNo++;
+					lineNo++;
 
-					state = KeyState;
-
-					return tokenQueue.shift();
+					return Newline;
 
 				case "=".code:
 					state = ValueState;
@@ -130,21 +144,30 @@ class Lexer {
 					// look until it finds a closing quote or \n
 
 				case "#".code:
-                    hasComment = true;
-                    state = CommentState;
-					// look until it finds the end line
+					hasComment = true;
+					state = CommentState;
+				// look until it finds the end line
 
-                case ",".code:
-                    // look until end 
+				case ",".code:
+					// look until end
 
 				default:
-					switch state {
-						case KeyState:
-							keyBuf.addChar(char);
-						case ValueState:
-							valueBuf.addChar(char);
-						case CommentState:
-							commentBuf.addChar(char);
+					if (char != null) {
+						if ((idChar[char]) 
+                            || (char == "_".code) 
+                            || (char == '"'.code) 
+                            || (char == "'".code) 
+                            || (char == " ".code) 
+                            || (char == ".".code)) {
+							switch state {
+								case KeyState:
+									keyBuf.addChar(char);
+								case ValueState:
+									valueBuf.addChar(char);
+								case CommentState:
+									commentBuf.addChar(char);
+							}
+						}
 					}
 			}
 		}
