@@ -129,8 +129,9 @@ class Lexer {
 				case '\n'.code:
 					lineNo++;
 
+                    // i need add detection for when a key is empty
 					if (state == CommentState || state == ValueState) {
-						addTokenQueue();
+                       addTokenQueue();
 					}
 
 					state = KeyState;
