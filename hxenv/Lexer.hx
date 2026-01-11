@@ -39,6 +39,8 @@ class Lexer {
 	// flags for each line
 	var hasComment:Bool = false;
 	var hasKey:Bool = false;
+    var multiLines = false;
+    var nextMultiLine = false;
 
 	public function new() {
 		idChar = [];
@@ -87,6 +89,11 @@ class Lexer {
 				// trace("Value: ", valueBuf.toString());
 			}
 
+            if (nextMultiLine && hasComment) {
+				throw "Cant have comment in multiline";
+			} else {
+				nextMultiLine = false;
+			}
 
 			// make functions to handle key, value
 			if (hasKey) {
@@ -96,7 +103,14 @@ class Lexer {
 				final trimmedValue:String = StringTools.trim(valueBuf.toString());
 				tokenQueue.push(Value(trimmedValue));
                 hasKey = false;
-			} 
+			}  
+            
+            // for multiline support
+            
+            if (!hasKey && valueBuf.length > 0){
+                final trimmedValue:String = StringTools.trim(valueBuf.toString());
+				tokenQueue.push(Value(trimmedValue));
+            }
 
 			if (hasComment) {
 				tokenQueue.push(Comment(commentBuf.toString()));
@@ -134,7 +148,17 @@ class Lexer {
                        addTokenQueue();
 					}
 
-					state = KeyState;
+                    // default state is key state
+                    if (multiLines) {
+                        state = ValueState;
+                        tokenQueue.push(Comma);
+                        multiLines = false;
+                        nextMultiLine = true;
+                    } else {
+                        state = KeyState;
+                    }
+
+				
 
 					resetBuffers();
 
@@ -178,6 +202,29 @@ class Lexer {
 				// look until it finds the end line
 
 				case ",".code:
+                    if (state == ValueState) {
+                        var tempPos:Int = pos;
+                        // peak ahead system until reached valid character
+
+                        var tempChar = query.charAt(tempPos);
+                        while (tempPos < query.length) {
+                            if (tempChar == "\n") {
+								break;
+							} else if (tempChar == " " || tempChar == "") {
+								tempPos++;
+								continue;
+							} else if (tempChar == "#") {
+								// ignore comment line since all values after it are ignored
+								break;
+							} else {
+								throw("Invalid multi line at " + lineNo);
+							}
+                        }
+
+                        multiLines = true;
+                    } else if (state == CommentState) {
+                        commentBuf.addChar(char);
+                    }
 					// look until end
 
 				default:
