@@ -142,6 +142,9 @@ class Lexer {
 
 				case "=".code:
 					if (state == KeyState) {
+                        if (keyBuf.length == 0) {
+                            throw ("Cant have empty key");
+                        }
 						state = ValueState;
                         hasKey = true;
 					} else if (state == ValueState) {
