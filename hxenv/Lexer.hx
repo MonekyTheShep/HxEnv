@@ -98,6 +98,7 @@ class Lexer {
 				tokenQueue.push(Comment(commentBuf.toString()));
 				hasComment = false;
 			}
+
 		}
 
 		while (true) {
@@ -113,7 +114,11 @@ class Lexer {
 					return Eof;
 				} else {
 					done = true;
-					addTokenQueue();
+                    if (state == ValueState) {
+					    addTokenQueue();
+                    } else {
+                        return Newline;
+                    }
 
 					resetBuffers();
 				}
@@ -127,15 +132,19 @@ class Lexer {
 
 			switch (char) {
 				case '\n'.code:
-					state = KeyState;
-
-					addTokenQueue();
+                    if (state == ValueState) {
+                        addTokenQueue();
+                    }  else {
+                        return Newline;
+                    }
+					
 
 					resetBuffers();
 
 					lineNo++;
+                    
+                    state = KeyState;
 
-					return Newline;
 
 				case "=".code:
 					state = ValueState;
