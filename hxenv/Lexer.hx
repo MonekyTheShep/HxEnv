@@ -25,6 +25,8 @@ class Lexer {
 	var lineNo:Int;
 	var state:LexerState = KeyState;
 
+    // buffers used because we have states for the lexer to add to these buffers
+
 	var keyBuf = new StringBuf();
 	var valueBuf = new StringBuf();
 	var commentBuf = new StringBuf();
@@ -38,6 +40,7 @@ class Lexer {
 		// normalise new line between windows and unix systems
 		this.query = StringTools.replace(q, "\r\n", "\n");
 		this.pos = 0;
+        this.lineNo = 1;
 
 		var result = [];
 		while (true) {
@@ -54,11 +57,14 @@ class Lexer {
 	}
 
 	function token() {
+        // use this to build line tokens
 		function addTokenQueue() {
             // debug lines
 			trace("Key: ", keyBuf.toString());
 			trace("Value: ", valueBuf.toString());
-            
+
+            // make functions to handle key, value, comments
+
 			tokenQueue.push(Key(keyBuf.toString()));
 			tokenQueue.push(Equals);
 			tokenQueue.push(Value(valueBuf.toString()));
@@ -67,6 +73,7 @@ class Lexer {
 
 		while (true) {
 			if (tokenQueue.length > 0) {
+                // returns the first element so it builds the tokens in order.
 				return tokenQueue.shift();
 			}
 
@@ -102,6 +109,8 @@ class Lexer {
 
 					resetBuffers();
 
+                    lineNo++;
+
 					state = KeyState;
 
 					return tokenQueue.shift();
@@ -114,6 +123,9 @@ class Lexer {
 
 				case "#".code:
 					// look until it finds the end line
+
+                case ",".code:
+                    // look until end 
 
 				default:
 					switch state {
