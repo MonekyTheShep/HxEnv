@@ -1,5 +1,7 @@
 package hxenv;
 
+import haxe.Rest;
+
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Value(value:String); // 𝑥 = 𝑦
@@ -10,290 +12,129 @@ enum Token {
 	Eof; // end of file
 }
 
+// complex rules
 enum LexerState {
-	KeyState; // key gets appended into key buffer
-	ValueState; // values gets appended into value buffer
-	QuoteState; // if inside of quotes
-	CommentState; // comments get appended into comment buffer
+	KeyState;
+	ValueState;
+	CommentState;
 }
 
 class Lexer {
 	var query:String;
-
-	// store current pos in query
 	var pos:Int;
-
-	// valid chars
-	var idChar:Array<Bool>;
-
-	// store current token from char
-	var tokens:Array<Token> = [];
-
-	// store line
-	var lineNo:Int = 1;
-
+	var lineNo:Int;
 	var state:LexerState = KeyState;
+
 	var keyBuf = new StringBuf();
 	var valueBuf = new StringBuf();
 	var commentBuf = new StringBuf();
+	var tokenQueue:Array<Token> = [];
 
-	inline static final whiteSpaceCharacter:String = "\\s+";
+	var done:Bool = false;
 
-	public function new() {
-		idChar = [];
+	public function new() {}
 
-		// populate valid chars with bools at ascii positions
-
-		for (i in 'A'.code...'Z'.code + 1) {
-			idChar[i] = true;
-		}
-
-		for (i in 'a'.code...'z'.code + 1) {
-			idChar[i] = true;
-		}
-
-		for (i in '0'.code...'9'.code + 1) {
-			idChar[i] = true;
-		}
-	}
-
-	public function lex(query:String):Array<Token> {
-		this.query = StringTools.replace(query, "\r\n", "\n");
+	public function lex(q:String):Array<Token> {
+		// normalise new line between windows and unix systems
+		this.query = StringTools.replace(q, "\r\n", "\n");
 		this.pos = 0;
-		this.lineNo = 1;
 
-		// loop through chars appending tokens until no more
-		tokenize();
+		var result = [];
+		while (true) {
+			var t = token();
 
-		return tokens;
+			if (t == Eof) {
+				result.push(t);
+				break;
+			}
+
+			result.push(t);
+		}
+		return result;
 	}
 
-	function tokenize() {
-		var hasKey = false;
-		var hasComment = false;
-		var multiLines = false;
-		var continuedNextLine = false;
-
-		function finaliseTokens() {
-			// if a key is valid append the value to it else throw error
-			if (hasKey) {
-				appendValue();
-				hasKey = false;
-			} else if (keyBuf.toString() != "") {
-				throw("Invalid key no equals sign at line " + lineNo);
-			} 
-
-			// append value for multi line
-			
-			if (valueBuf.toString() != "") {
-				appendValue();
-			}
-
-			if (continuedNextLine && hasComment) {
-				throw("Cant have comment in multiline");
-			} else {
-				continuedNextLine = false;
-			}
-
-			// default state is key state
-			if (multiLines) {
-				state = ValueState;
-				appendMultiLine();
-				continuedNextLine = true;
-				multiLines = false;
-			} else {
-				state = KeyState;
-			}
-
-			// append any comments
-
-			if (hasComment) {
-				appendComment();
-				hasComment = false;
-			}
+	function token() {
+		function addTokenQueue() {
+            // debug lines
+			trace("Key: ", keyBuf.toString());
+			trace("Value: ", valueBuf.toString());
+            
+			tokenQueue.push(Key(keyBuf.toString()));
+			tokenQueue.push(Equals);
+			tokenQueue.push(Value(valueBuf.toString()));
+			tokenQueue.push(Newline);
 		}
-
-		trace(lineNo);
 
 		while (true) {
-			// if reached end break loop;
+			if (tokenQueue.length > 0) {
+				return tokenQueue.shift();
+			}
+
 			if (this.pos >= query.length) {
-				// when reached finalise
-				finaliseTokens();
+				// add remaining tokens
 
-				tokens.push(Eof);
+				if (done == true) {
+					return Eof;
+				} else {
+					if (keyBuf.length != 0) {
+						done = true;
+						addTokenQueue();
+						resetBuffers();
+					} else {
+                        throw "Invalid key";
+                    }
+				}
 
-				break;
+                if (tokenQueue.length > 0) {
+					return tokenQueue.shift();
+				}
 			}
 
 			var char = nextChar();
 
 			switch (char) {
-				// when new line is found append the value/comment/multiline tokens;
 				case '\n'.code:
-					finaliseTokens();
+					if (keyBuf.length == 0) {
+						throw "Invalid key";
+					} else {
+						addTokenQueue();
+					}
 
 					resetBuffers();
 
-					// reset bools
-					hasComment = false;
-					hasKey = false;
+					state = KeyState;
 
-					tokens.push(Newline);
-					lineNo++;
-					trace(lineNo);
+					return tokenQueue.shift();
 
-					continue;
-
-				// switch the state to value when found "="
-				case '='.code:
-					// append the key when = is found if its not empty
-					// if this a comment state ignore this and add to comment
-					if (state != CommentState) {
-						if (state == KeyState && StringTools.trim(keyBuf.toString()) != "") {
-							appendKey();
-							hasKey = true;
-						} else if (state == ValueState) {
-							// append any other = to value
-							valueBuf.addChar(char);
-						} else if (StringTools.trim(keyBuf.toString()) == "") {
-							throw("Cant have empty key at line " + lineNo);
-							hasKey = false;
-						}
-
-						state = ValueState;
-					} else {
-						commentBuf.addChar(char);
-					}
-
-					continue;
-
-				// switch to comment state
-				case '#'.code:
-					switch (state) {
-						case CommentState:
-							state = CommentState;
-							commentBuf.addChar(char);
-						case KeyState:
-							// cant have # inside of key
-							if (keyBuf.toString() == "") {
-								hasComment = true;
-								state = CommentState;
-							} else {
-								invalidChar(char);
-							}
-
-						case ValueState:
-							hasComment = true;
-							state = CommentState;
-
-						case QuoteState:
-					}
-					continue;
+				case "=".code:
+					state = ValueState;
 
 				case '"'.code, "'".code:
-					if (state == CommentState) {
-						commentBuf.addChar(char);
-					}
-				// force scan of quotes to the end of line
+					// look until it finds a closing quote or \n
 
-				case ','.code:
-					// if , after comment ignore it i also need to add check for if its at end of line
-					// peak ahead of the pos until reach new line
-					if (state != CommentState) {
-						var tempPos:Int = pos;
+				case "#".code:
+					// look until it finds the end line
 
-						var onlyValidChar:Bool = true;
-
-						// create temp pos to peak ahead of the comma to check if the next is a newline
-						while (tempPos < query.length) {
-							onlyValidChar = true;
-							var tempChar = query.charAt(tempPos);
-
-							if (tempChar == "\n") {
-								onlyValidChar = true;
-								break;
-							} else if (tempChar == " " || tempChar == "") {
-								tempPos++;
-								continue;
-							} else if (tempChar == "#") {
-								// ignore comment line since all values after it are ignored
-								onlyValidChar = true;
-								break;
-							} else {
-								// this bool is useless since throw ends the program
-								onlyValidChar = false;
-								throw("Invalid multi line at " + lineNo);
-							}
-						}
-
-						multiLines = onlyValidChar;
-					} else {
-						commentBuf.addChar(char);
-					}
-
-				// append characters to buffers
 				default:
-					if ((idChar[char]) || (char == "_".code) || (char == '"'.code) || (char == "'".code) || (char == " ".code) || (char == ".".code)) {
-						switch (state) {
-							case KeyState:
-								if (char != " ".code) keyBuf.addChar(char);
-							case ValueState:
-								if (char != '"'.code || char != "'".code) valueBuf.addChar(char);
-							case CommentState:
-								commentBuf.addChar(char);
-							case QuoteState:
-						}
-					} else {
-						invalidChar(char);
+					switch state {
+						case KeyState:
+							keyBuf.addChar(char);
+						case ValueState:
+							valueBuf.addChar(char);
+						case CommentState:
+							commentBuf.addChar(char);
 					}
 			}
 		}
-
-		
-		return;
 	}
 
 	inline function nextChar() {
 		return StringTools.fastCodeAt(query, pos++);
 	}
 
-	function appendComment() {
-		tokens.push(Comment(commentBuf.toString()));
-		commentBuf = new StringBuf();
-	}
-
-	function appendKey() {
-		final trimmedKey:String = StringTools.trim(keyBuf.toString());
-		tokens.push(Key(trimmedKey));
-		tokens.push(Equals);
-		keyBuf = new StringBuf();
-	}
-
-	function appendValue() {
-		final trimmedValue:String = StringTools.trim(valueBuf.toString());
-
-		tokens.push(Value(trimmedValue));
-		valueBuf = new StringBuf();
-	}
-
-	function appendMultiLine() {
-		tokens.push(Comma);
-	}
-
-	function isWhiteSpace(char:String):Bool {
-		var r = new EReg(whiteSpaceCharacter, "g");
-
-		return r.match(char);
-	}
-
 	function resetBuffers() {
 		keyBuf = new StringBuf();
 		valueBuf = new StringBuf();
 		commentBuf = new StringBuf();
-	}
-
-	function invalidChar(char) {
-		throw "Unexpected char " + String.fromCharCode(char) + " at line " + lineNo;
 	}
 }
