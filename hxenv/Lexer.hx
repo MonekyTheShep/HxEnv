@@ -1,5 +1,7 @@
 package hxenv;
 
+import haxe.ValueException;
+
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Value(value:String); // 𝑥 = 𝑦
@@ -81,8 +83,8 @@ class Lexer {
 		function addTokenQueue() {
 			// debug lines
 			if (keyBuf.length != 0) {
-				trace("Key: ", keyBuf.toString());
-				trace("Value: ", valueBuf.toString());
+				// trace("Key: ", keyBuf.toString());
+				// trace("Value: ", valueBuf.toString());
 			}
 
 			// make functions to handle key, value
@@ -117,7 +119,7 @@ class Lexer {
 					return Eof;
 				} else {
 					done = true;
-					if (state == ValueState) {
+					if (state == CommentState || state == ValueState ) {
 						addTokenQueue();
 					}
 				}
@@ -135,8 +137,6 @@ class Lexer {
 
 					state = KeyState;
 
-                    trace(commentBuf);
-
 					resetBuffers();
 
 					tokenQueue.push(Newline);
@@ -152,6 +152,7 @@ class Lexer {
 					}
 
 				case '"'.code, "'".code:
+                    throw "fuck you im not handling quotes";
 					// look until it finds a closing quote or \n
 					// right now ill just make it throw an error i cant be asked to handle it
 
@@ -159,10 +160,17 @@ class Lexer {
 					// need to add comment validation
                     if (state == CommentState) {
                         commentBuf.addChar(char);
-                    } else {
-                        state = CommentState;
+                    } else if (state == ValueState) {
                         hasComment = true;
-                    }
+						state = CommentState;
+                    } else {
+                        if (keyBuf.length == 0) {
+							hasComment = true;
+							state = CommentState;
+						} else {
+							throw "You idiot you cant have a # before the value.";
+						}
+                    } 
                    
                     // fix this later
                 
