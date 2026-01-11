@@ -33,6 +33,7 @@ class Lexer {
 	var tokenQueue:Array<Token> = [];
 
 	var done:Bool = false;
+    var hasComment:Bool = false;
 
 	public function new() {}
 
@@ -60,14 +61,27 @@ class Lexer {
         // use this to build line tokens
 		function addTokenQueue() {
             // debug lines
-			trace("Key: ", keyBuf.toString());
-			trace("Value: ", valueBuf.toString());
+            if (keyBuf.length != 0) {
+                trace("Key: ", keyBuf.toString());
+			    trace("Value: ", valueBuf.toString());
+            }
+			
 
             // make functions to handle key, value, comments
 
-			tokenQueue.push(Key(keyBuf.toString()));
-			tokenQueue.push(Equals);
-			tokenQueue.push(Value(valueBuf.toString()));
+            if (keyBuf.length != 0) {
+                tokenQueue.push(Key(keyBuf.toString()));
+			    tokenQueue.push(Equals);
+			    tokenQueue.push(Value(valueBuf.toString()));
+            } else if (!hasComment){
+                throw "Empty Key";
+            }
+			
+            if (commentBuf.length > 0) {
+                tokenQueue.push(Comment(commentBuf.toString()));
+                hasComment = false;
+            } 
+            
 			tokenQueue.push(Newline);
 		}
 
@@ -83,13 +97,11 @@ class Lexer {
 				if (done == true) {
 					return Eof;
 				} else {
-					if (keyBuf.length != 0) {
-						done = true;
-						addTokenQueue();
-						resetBuffers();
-					} else {
-                        throw "Invalid key";
-                    }
+
+                    done = true;
+					addTokenQueue();
+					resetBuffers();
+
 				}
 
                 if (tokenQueue.length > 0) {
@@ -101,11 +113,7 @@ class Lexer {
 
 			switch (char) {
 				case '\n'.code:
-					if (keyBuf.length == 0) {
-						throw "Invalid key";
-					} else {
-						addTokenQueue();
-					}
+					addTokenQueue();
 
 					resetBuffers();
 
@@ -122,6 +130,8 @@ class Lexer {
 					// look until it finds a closing quote or \n
 
 				case "#".code:
+                    hasComment = true;
+                    state = CommentState;
 					// look until it finds the end line
 
                 case ",".code:
