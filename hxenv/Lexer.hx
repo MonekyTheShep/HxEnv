@@ -89,12 +89,7 @@ class Lexer {
 				// trace("Value: ", valueBuf.toString());
 			}
 
-            if (nextMultiLine && hasComment) {
-				throw "Cant have comment in multiline";
-			} else {
-				nextMultiLine = false;
-			}
-
+            
 			// make functions to handle key, value
 			if (hasKey) {
 				final trimmedKey:String = StringTools.trim(keyBuf.toString());
@@ -106,11 +101,15 @@ class Lexer {
 			}  
             
             // for multiline support
-            
-            if (!hasKey && valueBuf.length > 0){
+
+            if (nextMultiLine && hasComment) {
+				throw "Cant have comment in multiline";
+			} else if (nextMultiLine) {
                 final trimmedValue:String = StringTools.trim(valueBuf.toString());
 				tokenQueue.push(Value(trimmedValue));
-            }
+				nextMultiLine = false;
+			}
+
 
 			if (hasComment) {
 				tokenQueue.push(Comment(commentBuf.toString()));
@@ -142,14 +141,17 @@ class Lexer {
 			switch (char) {
 				case '\n'.code:
 					lineNo++;
+                    
 
                     // i need add detection for when a key is empty
 					if (state == CommentState || state == ValueState) {
                        addTokenQueue();
 					}
 
+                    
                     // default state is key state
                     if (multiLines) {
+                        trace("detected");
                         state = ValueState;
                         tokenQueue.push(Comma);
                         multiLines = false;
@@ -157,6 +159,7 @@ class Lexer {
                     } else {
                         state = KeyState;
                     }
+                    
 
 				
 
