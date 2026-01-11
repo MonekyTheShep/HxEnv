@@ -81,8 +81,8 @@ class Lexer {
 		function addTokenQueue() {
 			// debug lines
 			if (keyBuf.length != 0) {
-				// trace("Key: ", keyBuf.toString());
-				// trace("Value: ", valueBuf.toString());
+				trace("Key: ", keyBuf.toString());
+				trace("Value: ", valueBuf.toString());
 			}
 
 			// make functions to handle key, value
@@ -97,6 +97,7 @@ class Lexer {
 				throw "Cant have empty key";
 			}
 
+        
 			if (commentBuf.length != 0) {
 				tokenQueue.push(Comment(commentBuf.toString()));
 				hasComment = false;
@@ -128,11 +129,13 @@ class Lexer {
 				case '\n'.code:
 					lineNo++;
 
-					if (state != KeyState) {
+					if (state == CommentState || state == ValueState) {
 						addTokenQueue();
 					}
 
 					state = KeyState;
+
+                    trace(commentBuf);
 
 					resetBuffers();
 
@@ -154,20 +157,26 @@ class Lexer {
 
 				case "#".code:
 					// need to add comment validation
-					if (state == CommentState) {
-						commentBuf.addChar(char);
-					} else if (state == KeyState) {
-						// cant have # inside of key
-						if (keyBuf.toString() == "") {
-							hasComment = true;
-							state = CommentState;
-						} else {
-							throw "You idiot you cant have a # before the value.";
-						}
-					} else if (state == ValueState) {
-						hasComment = true;
-						state = CommentState;
-					}
+                    if (state == CommentState) {
+                        commentBuf.addChar(char);
+                    } else {
+                        state = CommentState;
+                        hasComment = true;
+                    }
+                   
+                    // fix this later
+                
+					// if (state == CommentState) {
+                        
+					// } else if (state == KeyState) {
+					// 	// cant have # inside of key
+					// 	if (keyBuf.toString() == "") {
+					// 		hasComment = true;
+					// 		state = CommentState;
+					// 	} else {
+					// 		throw "You idiot you cant have a # before the value.";
+					// 	}
+					// }
 
 				// look until it finds the end line
 
@@ -179,7 +188,7 @@ class Lexer {
 						if ((idChar[char]) || (char == "_".code) || (char == '"'.code) || (char == "'".code) || (char == " ".code) || (char == ".".code)) {
 							switch state {
 								case KeyState:
-									keyBuf.addChar(char);
+									if (char != " ".code) keyBuf.addChar(char);
 								case ValueState:
 									valueBuf.addChar(char);
 								case CommentState:
