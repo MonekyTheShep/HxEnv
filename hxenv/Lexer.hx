@@ -99,7 +99,6 @@ class Lexer {
 				throw "Cant have empty key";
 			}
 
-        
 			if (commentBuf.length != 0) {
 				tokenQueue.push(Comment(commentBuf.toString()));
 				hasComment = false;
@@ -119,7 +118,7 @@ class Lexer {
 					return Eof;
 				} else {
 					done = true;
-					if (state == CommentState || state == ValueState ) {
+					if (state == CommentState || state == ValueState) {
 						addTokenQueue();
 					}
 				}
@@ -145,46 +144,32 @@ class Lexer {
 					if (state == KeyState) {
 						state = ValueState;
 					} else if (state == ValueState) {
-                        throw "Cant have more than one equal sign";
-						//valueBuf.addChar(char);
+						throw "Cant have more than one equal sign";
+						// valueBuf.addChar(char);
 					} else if (state == CommentState) {
 						commentBuf.addChar(char);
 					}
 
 				case '"'.code, "'".code:
-                    throw "fuck you im not handling quotes";
-					// look until it finds a closing quote or \n
-					// right now ill just make it throw an error i cant be asked to handle it
+					throw "fuck you im not handling quotes";
+				// look until it finds a closing quote or \n
+				// right now ill just make it throw an error i cant be asked to handle it
 
 				case "#".code:
 					// need to add comment validation
-                    if (state == CommentState) {
-                        commentBuf.addChar(char);
-                    } else if (state == ValueState) {
-                        hasComment = true;
+					if (state == CommentState) {
+						commentBuf.addChar(char);
+					} else if (state == ValueState) {
+						hasComment = true;
 						state = CommentState;
-                    } else {
-                        if (keyBuf.length == 0) {
+					} else if (state == KeyState) {
+						if (keyBuf.length == 0) {
 							hasComment = true;
 							state = CommentState;
 						} else {
 							throw "You idiot you cant have a # before the value.";
 						}
-                    } 
-                   
-                    // fix this later
-                
-					// if (state == CommentState) {
-                        
-					// } else if (state == KeyState) {
-					// 	// cant have # inside of key
-					// 	if (keyBuf.toString() == "") {
-					// 		hasComment = true;
-					// 		state = CommentState;
-					// 	} else {
-					// 		throw "You idiot you cant have a # before the value.";
-					// 	}
-					// }
+					}
 
 				// look until it finds the end line
 
