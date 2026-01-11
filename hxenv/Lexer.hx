@@ -142,7 +142,8 @@ class Lexer {
 					if (state == KeyState) {
 						state = ValueState;
 					} else if (state == ValueState) {
-						valueBuf.addChar(char);
+                        throw "Cant have more than one equal sign";
+						//valueBuf.addChar(char);
 					} else if (state == CommentState) {
 						commentBuf.addChar(char);
 					}
@@ -164,9 +165,9 @@ class Lexer {
 							throw "You idiot you cant have a # before the value.";
 						}
 					} else if (state == ValueState) {
-                        hasComment = true;
+						hasComment = true;
 						state = CommentState;
-                    }
+					}
 
 				// look until it finds the end line
 
