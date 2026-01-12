@@ -16,6 +16,13 @@ Multiline support
 var content:String = File.getContent("example.env");
 var env:Env = Parser.parseString(content);
 
+trace(env.getAll());
+// returns the value of a key
+trace(env.get("KEY"));
+// returns if a key exists
+trace(env.has("KEY"));
+
+
 var string = Printer.serialize(env);
 
 var out = File.write(Sys.getCwd() + '/exampleout.env');
@@ -41,6 +48,18 @@ env.set("Key", "Value");
 env.addComment("Comment");
 env.get("Key"); // Value
 
-trace(env.toString()); // output serialised env
+var string:String = env.toString(); // output serialised env
+
+var out = File.write(Sys.getCwd() + '/exampleout.env');
+        
+try {
+    out.writeString(string);
+
+    out.flush();
+    out.close();
+} 
+catch (e:Dynamic) {
+    trace("Error: " + e);
+}
 
 ```
