@@ -1,11 +1,14 @@
 package hxenv;
-
+// should i make a token for double and single quote states?
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
-	Value(value:String); // 𝑥 = 𝑦
-	Comment(value:String); // # {comment}
 	Equals; // =
-	Comma; // ,
+	Value(value:String); // 𝑥 = 𝑦
+	Backtick(multilines:Array<String>); // holds multiple lines
+	InterpolatedValue(values:Array<Token>);  // holds values that can contain key as ${key}
+	NonInterpolatedValue(value:String); // holds literal values
+
+	Comment(value:String); // # {comment}
 	Newline; // \n
 	Eof; // end of file
 }
@@ -16,9 +19,15 @@ enum LexerState {
 	KeyState;
 	ValueState;
 	CommentState;
-	QuoteState;
+	// everything inside is treated as a string
+	SingleQuoteState;
+	// may contain variables
+	DoubleQuoteState;
+	// for multi line
+	Backtick;
 }
 
+// turns this static instead of a instance later
 class Lexer {
 	var query:String;
 	var pos:Int;
@@ -33,6 +42,8 @@ class Lexer {
 	var keyBuf = new StringBuf();
 	var valueBuf = new StringBuf();
 	var commentBuf = new StringBuf();
+	var singleQuoteBuf = new StringBuf();
+	var doubleQuoteBuf = new StringBuf();
 	var tokenQueue:Array<Token> = [];
 
 	var done:Bool = false;
@@ -99,11 +110,11 @@ class Lexer {
 			// for multiline support
 			// if there is a multiline emit value on its own
 
-			if (nextMultiLine && hasComment) {
-				throw "Cant have comment in multiline";
-			} else if (nextMultiLine) {
-				emitValue();
-			}
+			// if (nextMultiLine && hasComment) {
+			// 	throw "Cant have comment in multiline";
+			// } else if (nextMultiLine) {
+			// 	emitValue();
+			// }
 
 			// if a comment is valid emit it
 			if (hasComment) {
@@ -150,18 +161,18 @@ class Lexer {
 						addTokenQueue();
 					}
 
-					// default state is key state
-					if (multiLines) {
-						state = ValueState;
-						tokenQueue.push(Comma);
+					// // default state is key state
+					// if (multiLines) {
+					// 	state = ValueState;
+					// 	tokenQueue.push(Comma);
 
-						multiLines = false;
-						// bool to make sure next line doesnt have comment
-						// you cant have comments on multilines
-						nextMultiLine = true;
-					} else {
-						state = KeyState;
-					}
+					// 	multiLines = false;
+					// 	// bool to make sure next line doesnt have comment
+					// 	// you cant have comments on multilines
+					// 	nextMultiLine = true;
+					// } else {
+					// 	state = KeyState;
+					// }
 
 					resetBuffers();
 
@@ -202,7 +213,14 @@ class Lexer {
 						}
 					}
 
+
+				// nevermind it uses back tick for it not commas
+
+				case "`".code:
+
+
 				// look until it finds the end line
+				
 
 				case ",".code:
 					throw "multi line support added next update iteration";
@@ -240,7 +258,8 @@ class Lexer {
 									valueBuf.addChar(char);
 								case CommentState:
 									commentBuf.addChar(char);
-								case QuoteState:
+								default:
+								
 							}
 						}
 					}

@@ -35,16 +35,13 @@ class Parser {
                 case Comment(value):
                     env.addComment(value);
                     tokenIndex++;
+
                 case Newline:
                     // skip token
                     // or should i add a new line entry type?
                     trace("Found new line");
                     tokenIndex++;
                     
-                // case Comma:
-                //     // need to add multiline support to parser
-                //     trace("found new line separator");
-                //     tokenIndex++;
                 default:
                     tokenIndex++;   
             }
