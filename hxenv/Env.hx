@@ -15,12 +15,12 @@ class Env {
         switch (root) {
             case Document(children):
                 // loop through index of children
-                for (i in 0...children.length) {
-                    switch (children[i]) {
+                for (childIndex => child in children) {
+                    switch child {
                         case Entry(k, v):
                             if(key == k) {
-                                // overwrite the index of the child with new entry if key is the same
-                                children[i] = Entry(key, value);
+                                // overwrite element with index of the child with new entry if key is the same
+                                children[childIndex] = Entry(key, value);
                                 return;
                             }
                         default:
@@ -59,7 +59,7 @@ class Env {
     }
 
     public function has(key:String):Bool {
-                switch (root) {
+        switch (root) {
             case Document(children):
                 for (child in children) {
                     switch child {
