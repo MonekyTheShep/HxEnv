@@ -1,0 +1,11 @@
+{
+  "name": "hxenv",
+  "url" : "https://github.com/MonekyTheShep/HxEnv",
+  "license": "MIT",
+  "tags": ["lexer", "parser"],
+  "description": "This library will allow parsing of .ENV files",
+  "version": "1.0.0",
+  "classPath": "src",
+  "releasenote": "Take the lib name",
+  "contributors": ["MonekyTheShep"]
+}

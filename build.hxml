@@ -1,0 +1,11 @@
+# Source folder
+-cp src
+
+# Include your library
+-lib hxcpp
+
+# Main entry point
+-main Main
+
+# Haxe target
+-cpp build/cpp
