@@ -135,7 +135,7 @@ class Lexer {
 				}
 			}
 
-			var char = nextChar();
+			var char = nextChar() ?? 0;
 
 			switch (char) {
 				case '\n'.code:
@@ -182,6 +182,7 @@ class Lexer {
 					}
 
 				case '"'.code, "'".code:
+					trace("this shouldnt be a quote "+ String.fromCharCode(char));
 					throw "fuck you im not handling quotes";
 				// look until it finds a closing quote or \n
 				// right now ill just make it throw an error i cant be asked to handle it
@@ -231,7 +232,7 @@ class Lexer {
 					}
 
 				default:
-					if (char != null) {
+					if (char != 0) {
 						if ((idChar[char]) || (char == "_".code) || (char == " ".code) || (char == ".".code)) {
 							switch state {
 								case KeyState:
