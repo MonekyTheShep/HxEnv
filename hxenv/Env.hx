@@ -12,6 +12,7 @@ class Env {
     }
 
     public function set(key:String, value:String):Void {
+        if (key == "") throw "Cant set empty key";
         switch (root) {
             case Document(children):
                 // loop through index of children
