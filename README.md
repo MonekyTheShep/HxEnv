@@ -16,6 +16,13 @@ Multiline support
 var content:String = File.getContent("example.env");
 var env:Env = Parser.parseString(content);
 
+trace(env.getAll());
+// returns the value of a key
+trace(env.get("KEY"));
+// returns if a key exists
+trace(env.has("KEY"));
+
+
 var string = Printer.serialize(env);
 
 var out = File.write(Sys.getCwd() + '/exampleout.env');
