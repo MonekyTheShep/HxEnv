@@ -174,6 +174,8 @@ class Lexer {
 					// 	state = KeyState;
 					// }
 
+					state = KeyState;
+
 					resetBuffers();
 
 					tokenQueue.push(Newline);
