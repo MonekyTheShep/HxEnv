@@ -41,6 +41,18 @@ env.set("Key", "Value");
 env.addComment("Comment");
 env.get("Key"); // Value
 
-trace(env.toString()); // output serialised env
+var string:String = env.toString(); // output serialised env
+
+var out = File.write(Sys.getCwd() + '/exampleout.env');
+        
+try {
+    out.writeString(string);
+
+    out.flush();
+    out.close();
+} 
+catch (e:Dynamic) {
+    trace("Error: " + e);
+}
 
 ```
