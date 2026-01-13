@@ -1,13 +1,10 @@
 package hxenv.types;
 
-// represents an ast
+// Root -> Document -> Array of NodeTypes
+enum abstract EntryType(Int) {
+   final Document:EntryType = 1;
+   final Comment:EntryType = 2;
+   final KeyValue:EntryType = 3;
 
-// Root -> Document -> Array of Children
-enum EntryType {
-    // root
-    Document(children:Array<EntryType>);
-
-    // children
-    Entry(key:String, value:String);
-    Comment(text:String);
+   // add string values later
 }

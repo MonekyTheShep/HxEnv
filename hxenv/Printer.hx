@@ -1,26 +1,23 @@
 package hxenv;
 
 class Printer {
-    static public function serialize(doc:Env):String {
-        final stringBuffer:StringBuf = new StringBuf();
+	static public function serialize(doc:Env):String {
+		final stringBuffer:StringBuf = new StringBuf();
 
-        switch (doc.root) {
-            case Document(children):
-                for (child in children) {
-                    switch child {
-                        case Comment(text):
-                            stringBuffer.add("#" + text);
+		for (child in doc.children) {
+            switch (child.nodeType) {
+                case Comment:
+                            stringBuffer.add("#" + child.nodeValue);
 					        stringBuffer.add("\n");
-                        case Entry(key, value):
-                            stringBuffer.add(key + "=");
-					        stringBuffer.add(value);
+                case KeyValue:
+                            stringBuffer.add(child.nodeName + "=");
+					        stringBuffer.add(child.nodeValue);
                             stringBuffer.add("\n");
 
-                        default:
-                    }
-                }
-            default:
-        }
-        return stringBuffer.toString();
-    }
+                default:
+            }
+		}
+
+		return stringBuffer.toString();
+	}
 }

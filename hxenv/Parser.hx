@@ -14,7 +14,7 @@ class Parser {
 
     public static function parse(tokens:Array<Token>):Env
     {
-        var env = new Env();
+        var env:Env = Env.createDocument();
 
         var tokenIndex:Int = 0;
         while (tokenIndex < tokens.length) {
@@ -25,15 +25,21 @@ class Parser {
                         throw "No equals sign after key";
                     }
                     tokenIndex++;
-
+                   
                     switch (tokens[tokenIndex]) {
                         case Value(value):
-                            env.set(key, value);
+                            env.addChild(new Env(KeyValue, key, value));
+                        case Backtick(multilines):
+
+                        case NonInterpolatedValue(value):
+
+                        case InterpolatedValue(values):
+
                         default:
                     }
 
                 case Comment(value):
-                    env.addComment(value);
+                    env.addChild(new Env(Comment, null, value));
                     tokenIndex++;
 
                 case Newline:
@@ -41,7 +47,10 @@ class Parser {
                     // or should i add a new line entry type?
                     trace("Found new line");
                     tokenIndex++;
-                    
+
+                case Eof:
+                    return env;
+
                 default:
                     tokenIndex++;   
             }

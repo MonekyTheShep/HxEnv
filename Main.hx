@@ -13,11 +13,10 @@ class Main {
         var start = haxe.Timer.stamp();
 
 
+
         var env:Env = Parser.parseString(content);
 
         trace(env.get("KEY"));
-        trace(env.has("KEY"));
-        trace(env.getAll());
 
         var string = Printer.serialize(env);
 
