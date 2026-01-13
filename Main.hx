@@ -5,17 +5,12 @@ import sys.io.File;
 
 
 class Main {
-    static function main() {
-
-        
+    static function main() {        
         var content:String = File.getContent("test.env");
-        // hm
+		// before
         var start = haxe.Timer.stamp();
 
-
-
         var env:Env = Parser.parseString(content);
-
         trace(env.get("KEY"));
 
         var string = Printer.serialize(env);
@@ -31,6 +26,8 @@ class Main {
         catch (e:Dynamic) {
             trace("Error: " + e);
         }
+
+		// after
         
         var end = haxe.Timer.stamp();
         // find difference between end and start
