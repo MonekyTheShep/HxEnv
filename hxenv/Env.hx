@@ -66,6 +66,7 @@ class Env {
 		this.nodeName = name;
 		this.nodeValue = value;
 		this.children = new Array<Env>();
+        this.__disposed = false;
 	}
 
 	/**
