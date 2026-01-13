@@ -2,87 +2,121 @@ package hxenv;
 
 import hxenv.types.EntryType;
 
-
 class Env {
-    public var root:EntryType;
+	// stores the previous instance reference
+	public var parent:Null<Env>;
 
-    public function new() {
-       this.root = Document([]);
-       // children get added to root
+	// node type is read only
+	public var nodeType(default, null):Null<EntryType>;
+
+	// values of node for keyvalue and comment
+	public var nodeName:Null<String>;
+	public var nodeValue:Null<String>;
+
+	// array of children instances
+	public var children:Array<Env>;
+
+	public function new(type:EntryType, ?name:String, ?value:String):Void {
+		this.nodeType = type;
+		this.nodeName = name;
+		this.nodeValue = value;
+		this.children = new Array<Env>();
+	}
+
+    public static function createDocument():Env {
+        return new Env(Document);
     }
 
-    public function set(key:String, value:String):Void {
-        if (key == "") throw "Cant set empty key";
-        switch (root) {
-            case Document(children):
-                // loop through index of children
-                for (childIndex => child in children) {
-                    switch child {
-                        case Entry(k, v):
-                            if(key == k) {
-                                // overwrite element with index of the child with new entry if key is the same
-                                children[childIndex] = Entry(key, value);
-                                return;
-                            }
-                        default:
-                    }
-                    
-                }
+    public static function createKey(k:String, v:String):Env {
+        return new Env(KeyValue, k, v);
+    }
 
-                children.push(Entry(key, value));
-            default:
+    public function addChild<T:Env>(x:T):T {
+        // returns if the child is disposed
+        if (__disposed) {
+            return null;
         }
-    }
-
-    public function addComment(text:String) {
-        switch (root) {
-            case Document(children):
-                children.push(Comment(text));
-            default:
+        if (x.parent != null) {
+            x.parent.removeChild(x);
         }
+        children.push(x);
+        x.parent = this;
+        return x;
     }
 
-    public function get(key:String):String {
-        switch (root) {
-            case Document(children):
-                for (child in children) {
-                    switch child {
-                        case Entry(k, v):
-                            if (key == k) {
-                                return v;
-                            }
-                        default:
-                    }
+    public function removeChild(x:Env):Bool {
+        // add disposed part
+        if(!__disposed && children.remove(x)) {
+            x.parent = null;
+            return true;
+        }
+
+        return false;
+    }
+
+    var __disposed:Bool = false;
+
+    public function dispose():Void {
+        if (__disposed) {
+            return;
+        }
+
+        // loop through nodes children disposing of all
+        if (children != null && children.length > 0) {
+            for (child in children) {
+                if (child != null) {
+                    child.dispose();
                 }
-            default:
+            }
+        }
+
+        parent = null;
+        nodeName = null;
+        nodeValue = null;
+        nodeType = null;
+        children = null;
+
+        __disposed = true;
+
+
+    }
+
+    public function get(name:String):Null<String> {
+        if (nodeType == Document) {
+            for (child in children) {
+                if (child != null && child.nodeType == KeyValue && child.nodeName == name) {
+                    return child.nodeValue;
+                }
+            }
         }
         return null;
     }
 
-    public function has(key:String):Bool {
-        switch (root) {
-            case Document(children):
-                for (child in children) {
-                    switch child {
-                        case Entry(k, v):
-                            if (key == k) {
-                                return true;
-                            }
-                        default:
-                    }
+    public function set(name:String, value:String):Void {
+        if (nodeType == Document) {
+            for (child in children) {
+                if (child.nodeType == KeyValue && child.nodeName == name) {
+                    // if it exists overwrite it
+                    child.nodeValue = value;
+                    return;
                 }
-            default:
+            }
+            addChild(createKey(name, value));
         }
-        return false;
     }
 
-    public function getAll():EntryType {
-        return root;
+
+    public function comment(value:String):Void {
+        addChild(new Env(Comment, null, value));
     }
+    
 
     public function toString():String {
 		return Printer.serialize(this);
 	}
 
+
+    // add iterators later
 }
+
 
