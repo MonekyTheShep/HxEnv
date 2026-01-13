@@ -1,9 +1,9 @@
 package hxenv;
 
+import eval.vm.Gc;
 import hxenv.Lexer.Token;
 
 
-// basic parser
 class Parser {
     public static function parseString(string:String):Env {
         var lexer:Lexer = new Lexer();
@@ -28,7 +28,7 @@ class Parser {
                    
                     switch (tokens[tokenIndex]) {
                         case Value(value):
-                            env.addChild(new Env(KeyValue, key, value));
+                            env.addChild(Env.createKey(key, value));
                         case Backtick(multilines):
 
                         case NonInterpolatedValue(value):
