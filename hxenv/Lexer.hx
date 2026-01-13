@@ -219,12 +219,6 @@ class Lexer {
 				// nevermind it uses back tick for it not commas
 
 				case "`".code:
-
-
-				// look until it finds the end line
-				
-
-				case ",".code:
 					throw "multi line support added next update iteration";
 					if (state == ValueState || state == KeyState) {
 						var tempPos:Int = pos;
@@ -249,6 +243,7 @@ class Lexer {
 					} else if (state == CommentState) {
 						commentBuf.addChar(char);
 					}
+				
 
 				default:
 					if (char != 0) {

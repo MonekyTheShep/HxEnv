@@ -126,6 +126,8 @@ class Env {
 		if (__disposed) {
 			return null;
 		}
+
+		// a child can only have one parent
 		if (x.parent != null) {
 			x.parent.removeChild(x);
 		}
