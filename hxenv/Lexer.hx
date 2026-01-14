@@ -129,19 +129,18 @@ class Lexer {
 			}
 
 			if (this.pos >= query.length) {
-				// add remaining tokens when reached end line
+				// add remaining tokens when reached end line			
+				if (keyBuf.length > 0 && !hasKey) {
+					throw "No equals sign after key, cant build KEY=VALUE";
+				}
 
 				if (done == true) {
 					return Eof;
-				} else {
-					done = true;
-					if (keyBuf.length > 0 && !hasKey) {
-						throw "No equals sign after key, cant build KEY=VALUE";
-					}
+				}
 
-					if (state == CommentState || state == ValueState) {
-						addTokenQueue();
-					}
+				if (state == CommentState || state == ValueState) {
+					done = true;
+					addTokenQueue();
 				}
 			}
 
