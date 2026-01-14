@@ -1,11 +1,12 @@
 package hxenv;
+
 // should i make a token for double and single quote states?
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Equals; // =
 	Value(value:String); // 𝑥 = 𝑦
 	Backtick(multilines:Array<String>); // holds multiple lines
-	InterpolatedValue(values:Array<Token>);  // holds values that can contain key as ${key}
+	InterpolatedValue(values:Array<Token>); // holds values that can contain key as ${key}
 	NonInterpolatedValue(value:String); // holds literal values
 
 	Comment(value:String); // # {comment}
@@ -32,7 +33,9 @@ class Lexer {
 	var query:String;
 	var pos:Int;
 	var lineNo:Int;
+	var char:Int;
 	var state:LexerState = KeyState;
+
 	public var verboseMode:Bool = false;
 
 	// valid chars
@@ -72,6 +75,11 @@ class Lexer {
 		for (i in '0'.code...'9'.code + 1) {
 			idChar[i] = true;
 		}
+
+		idChar["_".code] = true;
+		idChar[" ".code] = true;
+		idChar[".".code] = true;
+		idChar[0] = true;
 	}
 
 	public function lex(query:String):Array<Token> {
@@ -94,33 +102,26 @@ class Lexer {
 		return result;
 	}
 
+	function addTokenQueue() {
+		// debug lines
+		if (keyBuf.length != 0 && verboseMode == true) {
+			trace("Key: ", keyBuf.toString());
+			trace("Value: ", valueBuf.toString());
+		}
+
+		// if the key is valid emit the key and value
+		if (hasKey) {
+			emitKeyAndValue();
+		}
+
+		// if a comment is valid emit it
+		if (hasComment) {
+			emitComment();
+		}
+	}
+
 	function token() {
 		// use this to build line tokens
-		function addTokenQueue() {
-			// debug lines
-			if (keyBuf.length != 0 && verboseMode == true) {
-				trace("Key: ", keyBuf.toString());
-				trace("Value: ", valueBuf.toString());
-			}
-		
-			// if the key is valid emit the key and value
-			if (hasKey) {
-				emitKeyAndValue();
-			}
-			// for multiline support
-			// if there is a multiline emit value on its own
-
-			// if (nextMultiLine && hasComment) {
-			// 	throw "Cant have comment in multiline";
-			// } else if (nextMultiLine) {
-			// 	emitValue();
-			// }
-
-			// if a comment is valid emit it
-			if (hasComment) {
-				emitComment();
-			}
-		}
 
 		while (true) {
 			if (tokenQueue.length > 0) {
@@ -142,122 +143,42 @@ class Lexer {
 					if (state == CommentState || state == ValueState) {
 						addTokenQueue();
 					}
-					
 				}
 			}
 
-			var char = nextChar() ?? 0;
+			char = nextChar() ?? 0;
 
 			switch (char) {
 				case '\n'.code:
-					lineNo++;
-
-					if (keyBuf.length > 0 && !hasKey) {
-						throw "No equals sign after key, cant build KEY=VALUE";
-					}
-
-					// i need add detection for when a key is empty
-					if (state == CommentState || state == ValueState) {
-						addTokenQueue();
-					}
-
-					// // default state is key state
-					// if (multiLines) {
-					// 	state = ValueState;
-					// 	tokenQueue.push(Comma);
-
-					// 	multiLines = false;
-					// 	// bool to make sure next line doesnt have comment
-					// 	// you cant have comments on multilines
-					// 	nextMultiLine = true;
-					// } else {
-					// 	state = KeyState;
-					// }
-
-					state = KeyState;
-
-					resetBuffers();
-
-					tokenQueue.push(Newline);
+					handleNewLine();
 
 				case "=".code:
-					if (state == KeyState) {
-						if (keyBuf.length == 0) {
-							throw "Cant have empty key";
-						}
-						state = ValueState;
-						hasKey = true;
-					} else if (state == ValueState) {
-						throw "Cant have more than one equal sign";
-						// valueBuf.addChar(char);
-					} else if (state == CommentState) {
-						commentBuf.addChar(char);
-					}
-
-				case '"'.code, "'".code:
-					throw "fuck you im not handling quotes";
-				// look until it finds a closing quote or \n
-				// right now ill just make it throw an error i cant be asked to handle it
-
+					handleEquals();
 				case "#".code:
-					// need to add comment validation
-					if (state == CommentState) {
-						commentBuf.addChar(char);
-					} else if (state == ValueState) {
-						hasComment = true;
-						state = CommentState;
-					} else if (state == KeyState) {
-						if (keyBuf.length == 0) {
-							hasComment = true;
-							state = CommentState;
-						} else {
-							throw "You idiot you cant have a # before the value.";
-						}
-					}
-
-
-				// nevermind it uses back tick for it not commas
-
+					handleComment();
 				case "`".code:
 					throw "multi line support added next update iteration";
-					if (state == ValueState || state == KeyState) {
-						var tempPos:Int = pos;
-						// peak ahead system until reached valid character
-
-						var tempChar = query.charAt(tempPos);
-						while (tempPos < query.length) {
-							if (tempChar == "\n") {
-								break;
-							} else if (tempChar == " " || tempChar == "") {
-								tempPos++;
-								continue;
-							} else if (tempChar == "#") {
-								// ignore comment line since all values after it are ignored
-								break;
-							} else {
-								throw("Invalid multi line at " + lineNo);
-							}
-						}
-
-						multiLines = true;
-					} else if (state == CommentState) {
-						commentBuf.addChar(char);
-					}
-				
+					handleBackTick();
+				// look until it finds a closing quote or \n
+				// right now ill just make it throw an error i cant be asked to handle it
+				case '"'.code, "'".code:
+					throw "fuck you im not handling quotes";
 
 				default:
+					if (!(idChar[char])) {
+						invalidChar(char);
+					}
+
+					// so it doesnt crash on static platforms
 					if (char != 0) {
-						if ((idChar[char]) || (char == "_".code) || (char == " ".code) || (char == ".".code)) {
-							switch state {
-								case KeyState:
-									if (char != " ".code) keyBuf.addChar(char);
-								case ValueState:
-									valueBuf.addChar(char);
-								case CommentState:
-									commentBuf.addChar(char);
-								default:
-								
-							}
+						switch state {
+							case KeyState:
+								if (char != " ".code) keyBuf.addChar(char);
+							case ValueState:
+								valueBuf.addChar(char);
+							case CommentState:
+								commentBuf.addChar(char);
+							default:
 						}
 					}
 			}
@@ -266,6 +187,84 @@ class Lexer {
 
 	inline function nextChar() {
 		return StringTools.fastCodeAt(query, pos++);
+	}
+
+	function handleNewLine() {
+		lineNo++;
+
+		if (keyBuf.length > 0 && !hasKey) {
+			throw "No equals sign after key, cant build KEY=VALUE";
+		}
+
+		// i need add detection for when a key is empty
+		if (state == CommentState || state == ValueState) {
+			addTokenQueue();
+		}
+
+		state = KeyState;
+
+		resetBuffers();
+
+		tokenQueue.push(Newline);
+	}
+
+	function handleEquals() {
+		if (keyBuf.length == 0 && state == KeyState) {
+			throw "Cant have empty key";
+		}
+
+		if (state == ValueState) {
+			throw "Cant have more than one equal sign";
+		}
+
+		if (state == KeyState) {
+			state = ValueState;
+			hasKey = true;
+		} else if (state == CommentState) {
+			commentBuf.addChar(char);
+		}
+	}
+
+	function handleComment() {
+		if (state == KeyState && keyBuf.length != 0) {
+			throw "You cant have a comment inside of a key.";
+		}
+
+		if (state == CommentState) {
+			commentBuf.addChar(char);
+		} else if (state == ValueState) {
+			hasComment = true;
+			state = CommentState;
+		} else if (state == KeyState) {
+			hasComment = true;
+			state = CommentState;
+		}
+	}
+
+	function handleBackTick() {
+		if (state == ValueState || state == KeyState) {
+			var tempPos:Int = pos;
+			// peak ahead system until reached valid character
+
+			var tempChar = query.charAt(tempPos);
+			while (tempPos < query.length) {
+				if (tempChar == "\n") {
+					break;
+				} else if (tempChar == " " || tempChar == "") {
+					tempPos++;
+					continue;
+				} else if (tempChar == "#") {
+					// ignore comment line since all values after it are ignored
+					break;
+				} else {
+					throw("Invalid multi line at " + lineNo);
+				}
+			}
+
+			multiLines = true;
+		} else if (state == CommentState) {
+			commentBuf.addChar(char);
+		}
 	}
 
 	function emitKeyAndValue() {
@@ -294,5 +293,9 @@ class Lexer {
 		keyBuf = new StringBuf();
 		valueBuf = new StringBuf();
 		commentBuf = new StringBuf();
+	}
+
+	function invalidChar(c) {
+		throw "Unexpected char '" + String.fromCharCode(c) + "'";
 	}
 }
