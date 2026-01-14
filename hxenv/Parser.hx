@@ -35,7 +35,9 @@ class Parser {
                         case InterpolatedValue(values):
 
                         default:
-                    }
+                            throw "Expected VALUE after EQUALS";
+
+                    }   
 
                 case Comment(value):
                     env.addChild(new Env(Comment, null, value));
