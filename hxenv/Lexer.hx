@@ -34,33 +34,66 @@ class Lexer {
 	var pos:Int;
 	var lineNo:Int;
 	var char:Null<Int>;
-	var state:LexerState = KeyState;
+	var state:LexerState;
 
-	public var verboseMode:Bool = false;
+	// is lexing done?
+	var done:Bool;
+
+	public var verboseMode:Bool;
 
 	// valid chars
-	var idChar:Array<Bool>;
+	static var idChar:Array<Bool> = populateValidChars();
 
 	// buffers used because we have states for the lexer to add to these buffers
-	var keyBuf = new StringBuf();
-	var valueBuf = new StringBuf();
-	var commentBuf = new StringBuf();
-	var singleQuoteBuf = new StringBuf();
-	var doubleQuoteBuf = new StringBuf();
-	var tokenQueue:Array<Token> = [];
-
-	var done:Bool = false;
-
+	var keyBuf:StringBuf;
+	var valueBuf:StringBuf;
+	var commentBuf:StringBuf;
+	var tokenQueue:Array<Token>;
+	// var singleQuoteBuf = new StringBuf();
+	// var doubleQuoteBuf = new StringBuf();
+	
 	// flags for each line
-	var hasComment:Bool = false;
-	var hasKey:Bool = false;
-
-	// should i make it a state?
-	var multiLines = false;
-	var nextMultiLine = false;
+	var hasComment:Bool;
+	var hasKey:Bool;
 
 	public function new() {
-		idChar = [];
+		this.verboseMode = false;
+	}
+
+	public function lex(query:String):Array<Token> {
+		// normalise new line between windows and unix systems
+		this.query = StringTools.replace(query, "\r\n", "\n");
+		this.pos = 0;
+		this.lineNo = 1;
+		this.state = KeyState;
+
+		this.done = false;
+		this.hasComment = false;
+		this.hasKey = false;
+
+		this.keyBuf = new StringBuf();
+		this.valueBuf = new StringBuf();
+		this.commentBuf = new StringBuf();
+		this.tokenQueue = new Array<Token>();
+		
+		
+
+		var result = [];
+		while (true) {
+			var t = token();
+
+			if (t == Eof) {
+				result.push(t);
+				break;
+			}
+
+			result.push(t);
+		}
+		return result;
+	}
+
+	static function populateValidChars():Array<Bool> {
+		var idChar = [];
 
 		// populate valid chars with bools at ascii positions
 
@@ -80,26 +113,7 @@ class Lexer {
 		idChar[" ".code] = true;
 		idChar[".".code] = true;
 		idChar[0] = true;
-	}
-
-	public function lex(query:String):Array<Token> {
-		// normalise new line between windows and unix systems
-		this.query = StringTools.replace(query, "\r\n", "\n");
-		this.pos = 0;
-		this.lineNo = 1;
-
-		var result = [];
-		while (true) {
-			var t = token();
-
-			if (t == Eof) {
-				result.push(t);
-				break;
-			}
-
-			result.push(t);
-		}
-		return result;
+		return idChar;
 	}
 
 	function addTokenQueue() {
@@ -240,29 +254,29 @@ class Lexer {
 	}
 
 	function handleBackTick() {
-		if (state == ValueState || state == KeyState) {
-			var tempPos:Int = pos;
-			// peak ahead system until reached valid character
+		// if (state == ValueState || state == KeyState) {
+		// 	var tempPos:Int = pos;
+		// 	// peak ahead system until reached valid character
 
-			var tempChar = query.charAt(tempPos);
-			while (tempPos < query.length) {
-				if (tempChar == "\n") {
-					break;
-				} else if (tempChar == " " || tempChar == "") {
-					tempPos++;
-					continue;
-				} else if (tempChar == "#") {
-					// ignore comment line since all values after it are ignored
-					break;
-				} else {
-					throw("Invalid multi line at " + lineNo);
-				}
-			}
+		// 	var tempChar = query.charAt(tempPos);
+		// 	while (tempPos < query.length) {
+		// 		if (tempChar == "\n") {
+		// 			break;
+		// 		} else if (tempChar == " " || tempChar == "") {
+		// 			tempPos++;
+		// 			continue;
+		// 		} else if (tempChar == "#") {
+		// 			// ignore comment line since all values after it are ignored
+		// 			break;
+		// 		} else {
+		// 			throw("Invalid multi line at " + lineNo);
+		// 		}
+		// 	}
 
-			multiLines = true;
-		} else if (state == CommentState) {
-			commentBuf.addChar(char);
-		}
+		// 	multiLines = true;
+		// } else if (state == CommentState) {
+		// 	commentBuf.addChar(char);
+		// }
 	}
 
 	function emitKeyAndValue() {
@@ -282,7 +296,6 @@ class Lexer {
 	function emitValue() {
 		final trimmedValue:String = StringTools.trim(valueBuf.toString());
 		tokenQueue.push(Value(trimmedValue));
-		nextMultiLine = false;
 	}
 
 	// buffers reset every line
