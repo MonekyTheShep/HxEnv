@@ -33,7 +33,7 @@ class Lexer {
 	var query:String;
 	var pos:Int;
 	var lineNo:Int;
-	var char:Int;
+	var char:Null<Int>;
 	var state:LexerState = KeyState;
 
 	public var verboseMode:Bool = false;
@@ -169,16 +169,14 @@ class Lexer {
 					}
 
 					// so it doesnt crash on static platforms
-					if (char != 0) {
-						switch state {
-							case KeyState:
-								if (char != " ".code) keyBuf.addChar(char);
-							case ValueState:
-								valueBuf.addChar(char);
-							case CommentState:
-								commentBuf.addChar(char);
-							default:
-						}
+					switch state {
+						case KeyState:
+							if (char != " ".code) keyBuf.addChar(char);
+						case ValueState:
+							valueBuf.addChar(char);
+						case CommentState:
+							commentBuf.addChar(char);
+						default:
 					}
 			}
 		}
