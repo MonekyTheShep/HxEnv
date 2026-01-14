@@ -1,6 +1,5 @@
 package hxenv;
 
-import eval.vm.Gc;
 import hxenv.Lexer.Token;
 
 

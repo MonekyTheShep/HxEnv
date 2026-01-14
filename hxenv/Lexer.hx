@@ -121,9 +121,8 @@ class Lexer {
 	}
 
 	function token() {
-		// use this to build line tokens
-
 		while (true) {
+			// use this to build line tokens
 			if (tokenQueue.length > 0) {
 				// returns the first element so it builds the tokens in order.
 				return tokenQueue.shift();
