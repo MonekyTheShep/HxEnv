@@ -129,19 +129,21 @@ class Lexer {
 			}
 
 			if (this.pos >= query.length) {
-				// add remaining tokens when reached end line			
+				// add remaining tokens when reached end line
+
+				if (done == true) {
+					return Eof;
+				} 
+			
 				if (keyBuf.length > 0 && !hasKey) {
 					throw "No equals sign after key, cant build KEY=VALUE";
 				}
 
-				if (done == true) {
-					return Eof;
-				}
-
+				done = true;
 				if (state == CommentState || state == ValueState) {
-					done = true;
 					addTokenQueue();
 				}
+				
 			}
 
 			char = nextChar() ?? 0;
@@ -212,12 +214,12 @@ class Lexer {
 		if (state == ValueState) {
 			throw "Cant have more than one equal sign";
 		}
-
-		if (state == KeyState) {
+		
+		if (state == CommentState) {
+			commentBuf.addChar(char);
+		} else if (state == KeyState) {
 			state = ValueState;
 			hasKey = true;
-		} else if (state == CommentState) {
-			commentBuf.addChar(char);
 		}
 	}
 
