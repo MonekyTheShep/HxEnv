@@ -7,8 +7,6 @@ import sys.io.File;
 class Main {
     static function main() {        
         var content:String = File.getContent("test.env");
-		// before
-        var start = haxe.Timer.stamp();
 
         var env:Env = Parser.parseString(content);
         trace(env.get("KEY"));
@@ -26,12 +24,6 @@ class Main {
         catch (e:Dynamic) {
             trace("Error: " + e);
         }
-
-		// after
         
-        var end = haxe.Timer.stamp();
-        // find difference between end and start
-		var elapsed = end - start;
-        trace("Elapsed time: " + elapsed + " seconds");
     }
 }
