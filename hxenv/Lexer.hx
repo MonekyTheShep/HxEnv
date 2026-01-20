@@ -29,7 +29,6 @@ enum LexerState {
 	Backtick;
 }
 
-// turns this static instead of a instance later
 class Lexer {
 	var query:String;
 	var pos:Int;
@@ -76,7 +75,7 @@ class Lexer {
 		this.valueBuf = new StringBuf();
 		this.commentBuf = new StringBuf();
 		this.tokenQueue = new Array<Token>();
-		
+
 		
 
 		var result = [];
@@ -315,7 +314,7 @@ class Lexer {
 		commentBuf = new StringBuf();
 	}
 
-	function invalidChar(c) {
+	inline function invalidChar(c) {
 		throw "Unexpected char '" + String.fromCharCode(c) + "'";
 	}
 }

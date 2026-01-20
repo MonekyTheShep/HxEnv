@@ -46,7 +46,7 @@ class Parser {
                 case Newline:
                     // skip token
                     // or should i add a new line entry type?
-                    trace("Found new line");
+                    // trace("Found new line");
                     tokenIndex++;
 
                 case Eof:
