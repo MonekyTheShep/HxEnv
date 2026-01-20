@@ -5,9 +5,10 @@ enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Equals; // =
 	Value(value:String); // 𝑥 = 𝑦
-	Backtick(multilines:Array<String>); // holds multiple lines
+	
 	InterpolatedValue(values:Array<Token>); // holds values that can contain key as ${key}
 	NonInterpolatedValue(value:String); // holds literal values
+	Backtick(multilines:Array<String>); // holds multiple lines
 
 	Comment(value:String); // # {comment}
 	Newline; // \n
@@ -42,7 +43,7 @@ class Lexer {
 	public var verboseMode:Bool;
 
 	// valid chars
-	static var idChar:Array<Bool> = populateValidChars();
+	static var idChar:Map<Int, Bool> = populateValidChars();
 
 	// buffers used because we have states for the lexer to add to these buffers
 	var keyBuf:StringBuf;
@@ -92,8 +93,8 @@ class Lexer {
 		return result;
 	}
 
-	static function populateValidChars():Array<Bool> {
-		var idChar = [];
+	static function populateValidChars():Map<Int, Bool> {
+		var idChar = new Map<Int, Bool>(); 
 
 		// populate valid chars with bools at ascii positions
 
@@ -165,7 +166,6 @@ class Lexer {
 			switch (char) {
 				case '\n'.code:
 					handleNewLine();
-
 				case "=".code:
 					handleEquals();
 				case "#".code:
@@ -183,7 +183,6 @@ class Lexer {
 						invalidChar(char);
 					}
 
-					// so it doesnt crash on static platforms
 					switch state {
 						case KeyState:
 							if (char != " ".code) keyBuf.addChar(char);
@@ -254,6 +253,16 @@ class Lexer {
 	}
 
 	function handleBackTick() {
+		if (state == ValueState && valueBuf.length != 0) {
+			throw "Can't have characters before backtick.";
+		}
+
+		if (state == CommentState) {
+			commentBuf.addChar(char);
+		} else if (state == ValueState) {
+			state = Backtick;
+		}
+
 		// if (state == ValueState || state == KeyState) {
 		// 	var tempPos:Int = pos;
 		// 	// peak ahead system until reached valid character
