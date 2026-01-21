@@ -56,7 +56,7 @@ class Lexer {
 	var hasComment:Bool;
 	var hasKey:Bool;
 
-	public function new() {
+	public function new(?verboseMode:Bool) {
 		this.verboseMode = false;
 	}
 
