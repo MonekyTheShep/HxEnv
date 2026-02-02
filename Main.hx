@@ -10,13 +10,14 @@ class Main {
 
         var env:Env = Parser.parseString(content);
         trace(env.get("KEY"));
+        trace(env.get("KEY2"));
 
-        var string = Printer.serialize(env);
+        // var string = Printer.serialize(env);
 
         var out = File.write(Sys.getCwd() + '/testout.env');
         
         try {
-            out.writeString(string);
+            out.writeString(env.toString());
 
             out.flush();
             out.close();
