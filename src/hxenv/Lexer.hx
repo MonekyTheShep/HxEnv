@@ -145,7 +145,7 @@ class Lexer {
 			if (this.pos >= query.length) {
 				// add remaining tokens when reached end line
 
-				if (done == true) {
+				if (done) {
 					return Eof;
 				} 
 			
