@@ -19,7 +19,7 @@ var env:Env = Parser.parseString(content);
 // returns the value of a key
 trace(env.get("KEY"));
 
-var string = Printer.serialize(env);
+var string = env.toString();
 
 var out = File.write(Sys.getCwd() + '/exampleout.env');
         
