@@ -1,5 +1,7 @@
 package hxenv;
 
+import hxenv.Utils.Util;
+
 class Printer {
 	static public function serialize(doc:Env):String {
         if (doc.nodeType != Document) throw "Serialize can only be used on Document Node!";
@@ -13,7 +15,7 @@ class Printer {
 					        stringBuffer.add("\n");
                 case KeyValue:
                             stringBuffer.add(child.nodeName + "=");
-					        stringBuffer.add(child.nodeValue);
+					        stringBuffer.add(Util.normaliseValue(child.nodeValue));
                             stringBuffer.add("\n");
 
                 default:
