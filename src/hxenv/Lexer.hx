@@ -88,7 +88,6 @@ class Lexer {
 					throw "Quote support will be added in later versions!";
                 default: 
 					if (isEof(char)) return Eof;
-					trace(peek());
 					if (state == KeyState) return readKeyIdentifier();
 					if (state == ValueState) return readValue();
             }
