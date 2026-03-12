@@ -101,13 +101,12 @@ class Lexer {
 			nextChar();
 		}
 
-
 		var keyValue:String = StringTools.trim(query.substr(start, pos - start));
 
 		for (i in 0...keyValue.length) {
 			if (!idChar[keyValue.charCodeAt(i)]) invalidChar(keyValue.charCodeAt(i));
 		}
-		
+
 		return Key(keyValue);
 	}
 
@@ -116,6 +115,12 @@ class Lexer {
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
 			nextChar();
+		}
+
+		var value:String = query.substr(start, pos - start);
+
+		for (i in 0...value.length) {
+			if (!isQuote(value.charCodeAt(i))) invalidChar(value.charCodeAt(i));
 		}
 
 		return Value(query.substr(start, pos - start));
@@ -143,4 +148,5 @@ class Lexer {
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
+	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code;
 }
