@@ -1,5 +1,0 @@
-package hxenv;
-
-class AstNode {
-
-}

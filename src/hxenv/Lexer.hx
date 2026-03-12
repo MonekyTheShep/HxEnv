@@ -6,6 +6,7 @@ enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Equals; // =
 	Value(value:String); // 𝑥 = 𝑦
+	MultiLineValue(values:Array<String>);
 
 	Comment(value:String); // #{comment}
 	Newline; // \n
@@ -50,10 +51,6 @@ class Lexer {
 		}
 
 		idChar["_".code] = true;
-		idChar["-".code] = true;
-		idChar["$".code] = true;
-		idChar[".".code] = true;
-		idChar[0] = true;
 		return idChar;
 	}
 
@@ -94,8 +91,9 @@ class Lexer {
                     return readComment();
 				case '`'.code:
 					quoteError();
+					return readMultiLine();
 				case '"'.code:
-					quoteError();
+					return readDoubleQuote();
 				case "'".code:
 					return readSingleQuote();
                 default: 
@@ -109,6 +107,7 @@ class Lexer {
 	function readKeyIdentifier():Token {
 		final start:Int = pos;
 
+		if (isDigit(peek())) invalidChar(peek()); // First character can't start with digit.
 		while (!isEqual(peek()) && !isNewline(peek()) && !isEof(peek())) {
 			if (!idChar[peek()]) invalidChar(peek());
 			advance();
@@ -118,51 +117,100 @@ class Lexer {
 		return Key(keyIdentifier);
 	}
 
-	// function readMultiLine():Token {
-	// 	var quote = advance();
-	// 	var stringBuf:StringBuf = new StringBuf();
+	function readMultiLine():Token {
+		var quote = advance(); // Consume Starting Quote
 
-	// 	while (!isEof(peek()) && peek() != quote) {
-	// 		if (peek() == '\n'.code) {
-	// 			advance();
-	// 			continue; // Skip new line
-	// 		}
-	// 		stringBuf.add(String.fromCharCode(advance()));
-	// 	}
+		var lines:Array<String> = [];
+		var stringBuf:StringBuf = new StringBuf();
 
-	// 	if (isEof(peek())) throw 'Unclosed ` quotes';
+		while (!isEof(peek()) && peek() != quote) {
+			if (peek() == '\n'.code) {
+				if (stringBuf.length > 0) lines.push(stringBuf.toString());
+				stringBuf = new StringBuf(); // Reset String Buffer
+				advance();
+				continue; // Skip new line
+			}
+			
+			stringBuf.addChar(advance());
+		}
 
-	// 	advance();
-	// 	trace(stringBuf.toString());
-	// 	return Value(stringBuf.toString());
-	// }
+		if (peek() == quote && stringBuf.length > 0) lines.push(stringBuf.toString()); // Push line if reached quote
+
+		if (isEof(peek())) throw 'Unclosed ` quotes';
+
+		advance(); // Consume Ending Quote
+		return MultiLineValue(lines);
+	}
 
 	function readSingleQuote():Token {
-		var quote = advance(); // Consume Starting Quote
+		final quote = advance(); // Consume Starting Quote
 		var stringBuf:StringBuf = new StringBuf();
 
 		while (!isEof(peek()) && !isNewline(peek()) && peek() != quote) {
-			stringBuf.add(String.fromCharCode(advance()));
+			stringBuf.addChar(advance());
 		}
 
 		if (isEof(peek()) || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 		
-		while (peek() == ' '.code) advance(); // Skip white spaces after quote
+		while (isSpace(peek())) advance(); // Skip white spaces after quote
 		return Value(stringBuf.toString());
 	}
 
+	function readDoubleQuote():Token {
+		final quote = advance(); // Consume Starting Quote
+		var stringBuf:StringBuf = new StringBuf();
+
+		while (!isEof(peek()) && peek() != quote) {
+			
+			if (isBackSlash(peek()) && !isEof(peekNext())) {
+				advance();
+				var next:Int = advance();
+
+				switch (next) {
+					case 'n'.code:
+						stringBuf.add('\n');
+					case 't'.code:
+						stringBuf.add('\t');
+					case 'r'.code:
+						stringBuf.add('\r');
+					case '\\'.code:
+						stringBuf.add('\\');
+					case '"'.code:
+						stringBuf.add('"');
+					case "'".code:
+						stringBuf.add("'");
+					default:
+						stringBuf.add(next);
+				}
+			} else {
+				stringBuf.addChar(advance());
+			}
+		}
+
+		if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+
+		advance(); // Consume Ending Quote
+		
+		while (isSpace(peek())) advance(); // Skip white spaces after quote
+		return Value(stringBuf.toString());
+	}
+	
 	function readValue():Token {
 		final start:Int = pos;
 
-		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
+		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek()) && !isCommentPrefix(peek())) {
 			if (isQuote(peek())) quoteError();
-			if(!isAlphaNumeric(peek()) && !isSpace(peek())) invalidChar(peek());
+			if(!isAlphaNumeric(peek())) invalidChar(peek());
 			advance();
 		}
 
 		var value:String = query.substring(start, pos);
+
+		while (isSpace(peek())) advance(); // Skip white spaces after value
+
+		state = KeyState; // Reset to Key State after reading Value
 		return Value(value);
 	}
 
@@ -183,16 +231,26 @@ class Lexer {
 
     inline function peek():Int {
         return StringTools.fastCodeAt(query, pos);
-    }					
+    }	
+	
+	inline function peekNext():Int {
+        return StringTools.fastCodeAt(query, pos + 1);
+    }	
 
+	//----------------------------------------------------------------------------------
+	// Helper Functions
+	//----------------------------------------------------------------------------------
 	function invalidChar(char:Int) throw 'Unexpected char \'${String.fromCharCode(char)}\' at line ${lineNo}, col ${col}!';
+	function quoteError() throw 'Unexpected backtick quote or double quote at line ${lineNo}, col ${col}! Support will be added in later revisions!';
+
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isEqual(char:Int):Bool return char == '='.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
 	inline function isSpace(char:Int):Bool return char == ' '.code;
 	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
-	function quoteError() throw 'Unexpected backtick quote or double quote at line ${lineNo}, col ${col}! Support will be added in later revisions!';
+	inline function isBackSlash(char:Int):Bool return char == '\\'.code;
+	
 
 	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
 	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
