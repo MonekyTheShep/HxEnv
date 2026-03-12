@@ -49,22 +49,29 @@ class Parser {
     }
 
     function parseKeyValue():Env {
-        var key:String = switch peekToken() {
+        var key:String = readKey();
+       
+        var value:String = readValue();
+
+        return Env.createKey(key, value);
+    }
+
+    function readKey():String {
+        return switch peekToken() {
             case Key(key): key;
             default: "";
         };
-        
+    }
+
+    function readValue():String {
         expect(Equals, 'No EQUALS sign after KEY at line ${lineNo}');
 
         expect(Value(""), 'Expected VALUE after EQUALS at line ${lineNo}');
-                
-
-        var value:String = switch peekToken() {
+        
+        return switch peekToken() {
             case Value(value): value;
             default: "";
-        }
-
-        return Env.createKey(key, value);
+        } 
     }
 
     inline function peekToken():Token {
