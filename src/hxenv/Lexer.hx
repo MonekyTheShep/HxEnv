@@ -1,6 +1,6 @@
 package hxenv;
 
-import haxe.macro.Expr.Catch;
+import hxenv.Utils.Util;
 
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
@@ -51,38 +51,6 @@ class Lexer {
 
 		idChar["_".code] = true;
 		return idChar;
-	}
-
-
-    static var valChar:Map<Int, Bool> = populateValChars();
-
-    static function populateValChars():Map<Int, Bool> {
-		var valChar = new Map<Int, Bool>(); 
-
-		// populate value chars with bools at ascii positions
-		for (i in 'A'.code...'Z'.code + 1) {
-			valChar[i] = true;
-		}
-
-		for (i in 'a'.code...'z'.code + 1) {
-			valChar[i] = true;
-		}
-
-		for (i in '0'.code...'9'.code + 1) {
-			valChar[i] = true;
-		}
-
-		valChar["_".code] = true;
-		valChar[".".code] = true;
-		valChar["-".code] = true;
-		valChar["/".code] = true;
-		valChar[":".code] = true;
-		valChar["@".code] = true;
-		valChar["%".code] = true;
-		valChar["+".code] = true;
-		valChar[",".code] = true;
-		valChar["=".code] = true;
-		return valChar;
 	}
 
     public function lex(query:String):Array<Token> {
@@ -167,8 +135,8 @@ class Lexer {
 		
 		while (!isEof(peek()) && peek() != quote) {
 			if (isBackSlash(peek()) && !isEof(peekNext())) {
-				advance();
-				var next:Int = advance();
+				advance(); // Consume Escape Character
+				var next:Int = advance(); // Consume next character after Escape Character
 
 				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 
@@ -206,7 +174,7 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek()) && !isCommentPrefix(peek())) {
-			if(!valChar[peek()]) invalidChar(peek());
+			if(!Util.valChar[peek()]) invalidChar(peek());
 			advance();
 		}
 
