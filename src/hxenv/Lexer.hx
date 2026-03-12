@@ -88,6 +88,7 @@ class Lexer {
 					throw "Quote support will be added in later versions!";
                 default: 
 					if (isEof(char)) return Eof;
+					trace(peek());
 					if (state == KeyState) return readKeyIdentifier();
 					if (state == ValueState) return readValue();
             }
@@ -97,7 +98,8 @@ class Lexer {
 	function readKeyIdentifier():Token {
 		final start:Int = pos - 1;
 
-		while (idChar[peek()] && !isEof(peek()) && !isCommentPrefix(peek())) {
+		while (!isEof(peek()) && !isCommentPrefix(peek())) {
+			if (!idChar[peek()]) break;
 			nextChar();
 		}
 
