@@ -73,15 +73,15 @@ class Lexer {
     function token():Token {
 		while (true) {
             final char = peek();
-
+			
             switch (char) {
 				case '\n'.code:
-					nextChar();
+					advance();
 					lineNo++;
 					state = KeyState;
                     return Newline;
                 case "=".code:
-					nextChar();
+					advance();
                     state = ValueState;
                     return Equals;
                 case "#".code:
@@ -101,7 +101,7 @@ class Lexer {
 
 		while (!isEof(peek()) && !isCommentPrefix(peek())) {
 			if (!idChar[peek()]) break;
-			nextChar();
+			advance();
 		}
 
 		var keyValue:String = StringTools.trim(query.substr(start, pos - start));
@@ -117,7 +117,7 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
-			nextChar();
+			advance();
 		}
 
 		var value:String = query.substring(start, pos);
@@ -133,13 +133,13 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek())) {
-			nextChar();
+			advance();
 		}
 
 		return Comment(query.substring(start, pos));
 	}
 
-    inline function nextChar():Int {
+    inline function advance():Int {
 		return StringTools.fastCodeAt(query, pos++);
 	}
 
