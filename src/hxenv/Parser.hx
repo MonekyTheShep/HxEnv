@@ -44,15 +44,14 @@ class Parser {
 
                 default:
                     nextToken();
-                }
-           
+            }
         }
 
         return env;
     }
 
     function parseKeyValue():Env {
-        var key:String = switch peekToken(){
+        var key:String = switch peekToken() {
             case Key(key): key;
             default: "";
         };
@@ -70,22 +69,22 @@ class Parser {
         return Env.createKey(key, value);
     }
 
-    inline function peekToken(): Token {
+    inline function peekToken():Token {
         return tokens[pos];
     }
 
-    inline function nextToken(): Token {
+    inline function nextToken():Token {
         return tokens[pos++];
     }
 
     /**
         Checks if the next token meets the expected token by comparing the enum index.
     **/
-    inline function expect(expected:Token, ?err:String):Void {
+    function expect(expected:Token, ?err:String):Void {
 		nextToken();
     
 		if (Type.enumIndex(peekToken()) != Type.enumIndex(expected)) {
-            if (err != null) throw 'Expected token ${expected} but received ${peekToken()} at line ${lineNo}';
+            if (err == null) throw 'Expected token ${expected} but received ${peekToken()} at line ${lineNo}';
             
             throw err;
         };
