@@ -19,6 +19,7 @@ class Lexer {
 	var query:String;
 	var pos:Int;
 	var lineNo:Int;
+	var col:Int;
 	var state:LexerState;
     public var verboseMode:Bool;
 
@@ -57,6 +58,7 @@ class Lexer {
         this.query = StringTools.replace(query, "\r\n", "\n");
 		this.pos = 0;
 		this.lineNo = 1;
+		this.col = 1;
 		this.state = KeyState;
 		
        var result = [];
@@ -78,6 +80,7 @@ class Lexer {
 				case '\n'.code:
 					advance();
 					lineNo++;
+					col = 1;
 					state = KeyState;
                     return Newline;
                 case '='.code:
@@ -131,14 +134,15 @@ class Lexer {
 	}
 
     inline function advance():Int {
+		col++;
 		return StringTools.fastCodeAt(query, pos++);
 	}
 
     inline function peek():Int {
         return StringTools.fastCodeAt(query, pos);
-    }
+    }					
 
-	function invalidChar(char:Int) throw 'Unexpected char ${String.fromCharCode(char)} at line ${lineNo}!';
+	function invalidChar(char:Int) throw 'Unexpected char ${String.fromCharCode(char)} at line ${lineNo}, col ${col}!';
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isEqual(char:Int):Bool return char == '='.code;
