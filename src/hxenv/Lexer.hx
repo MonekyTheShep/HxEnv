@@ -104,13 +104,13 @@ class Lexer {
 			if (!idChar[peek()]) break;
 		}
 
-		var keyValue:String = StringTools.trim(query.substring(start, pos));
+		var keyIdentifier:String = StringTools.trim(query.substring(start, pos));
 
-		for (i in 0...keyValue.length) {
-			if (!idChar[keyValue.charCodeAt(i)]) invalidChar(keyValue.charCodeAt(i));
+		for (i in 0...keyIdentifier.length) {
+			if (!idChar[keyIdentifier.charCodeAt(i)]) invalidChar(keyIdentifier.charCodeAt(i));
 		}
 
-		return Key(keyValue);
+		return Key(keyIdentifier);
 	}
 
 	function readValue():Token {
