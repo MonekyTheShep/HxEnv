@@ -185,7 +185,7 @@ class Lexer {
         return StringTools.fastCodeAt(query, pos);
     }					
 
-	function invalidChar(char:Int) throw 'Unexpected char ${String.fromCharCode(char)} at line ${lineNo}, col ${col}!';
+	function invalidChar(char:Int) throw 'Unexpected char \'${String.fromCharCode(char)}\' at line ${lineNo}, col ${col}!';
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isEqual(char:Int):Bool return char == '='.code;
