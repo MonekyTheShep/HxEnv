@@ -83,6 +83,8 @@ class Lexer {
                     return Equals;
                 case "#".code:
                     return readComment();
+				case '"'.code, "'".code:
+					throw "Quote support will be added in later versions!";
                 default: 
 					if (isEof(char)) return Eof;
 					if (!idChar[char]) invalidChar(char);
