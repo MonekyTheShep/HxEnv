@@ -124,19 +124,16 @@ class Lexer {
 		return Comment(query.substr(start, pos - start));
 	}
 
-
     inline function nextChar():Int {
-		if (this.pos >= query.length) return -1;
 		return StringTools.fastCodeAt(query, pos++);
 	}
 
     inline function peek():Int {
-		if (this.pos >= query.length) return -1;
         return StringTools.fastCodeAt(query, pos);
     }
 
 	function invalidChar(char:Int) throw 'Unexpected char ${String.fromCharCode(char)} at line ${lineNo}!';
-	inline function isEof(char:Int):Bool return char == -1;
+	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
 }
