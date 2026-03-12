@@ -14,7 +14,9 @@ Multiline support
 ## Example Usage Parse and Access
 ```haxe
 var content:String = File.getContent("example.env");
-var env:Env = Parser.parseString(content);
+var parser:Parser = new Parser();
+
+var env:Env = parser.parseString(content);
 
 // returns the value of a key
 trace(env.get("KEY"));
