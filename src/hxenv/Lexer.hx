@@ -120,7 +120,7 @@ class Lexer {
 		var value:String = query.substr(start, pos - start);
 
 		for (i in 0...value.length) {
-			if (!isQuote(value.charCodeAt(i))) invalidChar(value.charCodeAt(i));
+			if (isQuote(value.charCodeAt(i))) invalidChar(value.charCodeAt(i));
 		}
 
 		return Value(query.substr(start, pos - start));
