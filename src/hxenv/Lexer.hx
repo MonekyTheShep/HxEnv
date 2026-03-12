@@ -100,7 +100,6 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isEof(peek()) && !isCommentPrefix(peek())) {
-			if (!idChar[peek()]) break;
 			advance();
 		}
 
