@@ -88,10 +88,11 @@ class Parser {
     /**
         Checks if token meets the expected token by comparing the enum index while consuming token.
     **/
-    function expect(expected:Token, err:String):Token {
+    function expect(expected:Token, ?err:String):Token {
 		final token:Token = nextToken();
     
 		if (Type.enumIndex(token) != Type.enumIndex(expected)) {
+            if (err != null) throw err;
             throw 'Expected token ${expected.getName()} but received ${token.getName()} at line ${lineNo}';
         } else {
             return token;
