@@ -17,7 +17,7 @@ class Parser {
     public function parse(args:Array<Token>):Env
     {
         this.pos = 0;
-        this.lineNo = 0;
+        this.lineNo = 1;
         this.tokens = args;
         trace(tokens);
 
