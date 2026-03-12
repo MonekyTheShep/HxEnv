@@ -94,8 +94,10 @@ class Lexer {
                     return readComment();
 				case '`'.code:
 					quoteError();
-				case '"'.code, "'".code:
+				case '"'.code:
 					quoteError();
+				case "'".code:
+					return readSingleQuote();
                 default: 
 					if (isEof(char)) return Eof;
 					if (state == KeyState) return readKeyIdentifier();
@@ -128,12 +130,28 @@ class Lexer {
 	// 		stringBuf.add(String.fromCharCode(advance()));
 	// 	}
 
-	// 	if (isEof(peek())) throw "Unclosed ` quotes";
+	// 	if (isEof(peek())) throw 'Unclosed ` quotes';
 
 	// 	advance();
 	// 	trace(stringBuf.toString());
 	// 	return Value(stringBuf.toString());
 	// }
+
+	function readSingleQuote():Token {
+		var quote = advance(); // Consume Starting Quote
+		var stringBuf:StringBuf = new StringBuf();
+
+		while (!isEof(peek()) && !isNewline(peek()) && peek() != quote) {
+			stringBuf.add(String.fromCharCode(advance()));
+		}
+
+		if (isEof(peek()) || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
+
+		advance(); // Consume Ending Quote
+		
+		while (peek() == ' '.code) advance(); // Skip white spaces after quote
+		return Value(stringBuf.toString());
+	}
 
 	function readValue():Token {
 		final start:Int = pos;
@@ -174,7 +192,7 @@ class Lexer {
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
 	inline function isSpace(char:Int):Bool return char == ' '.code;
 	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
-	function quoteError() throw 'Unexpected quote at line ${lineNo}, col ${col}! Quote support will be added in later revisions!';
+	function quoteError() throw 'Unexpected backtick quote or double quote at line ${lineNo}, col ${col}! Support will be added in later revisions!';
 
 	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
 	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);

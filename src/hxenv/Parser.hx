@@ -36,7 +36,7 @@ class Parser {
                     throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
 
                 case Value(_):
-                    throw 'Unexpected VALUE! Expected EQUALS before VALUE at line ${lineNo}';
+                    throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
 
                 case Newline:
                     lineNo++;
@@ -59,19 +59,21 @@ class Parser {
     }
 
     function readKey():String {
-        return switch peekToken() {
+        return switch nextToken() { // Consume Key
             case Key(key): key;
             default: "";
         };
     }
 
     function readValue():String {
-        expect(Equals, 'No EQUALS sign after KEY at line ${lineNo}');
+        expect(Equals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
 
-        expect(Value(""), 'Expected VALUE after EQUALS at line ${lineNo}');
+        var valueToken = expect(Value(""), 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
         
-        return switch nextToken() { // Consume Value
-            case Value(value): value;
+        return switch valueToken { 
+            case Value(value):
+                trace(value); 
+                value; 
             default: "";
         } 
     }
@@ -85,15 +87,15 @@ class Parser {
     }
 
     /**
-        Checks if the next token meets the expected token by comparing the enum index.
+        Checks if token meets the expected token by comparing the enum index while consuming token.
     **/
-    function expect(expected:Token, ?err:String):Void {
-		nextToken();
+    function expect(expected:Token, err:String):Token {
+		final token:Token = nextToken();
     
-		if (Type.enumIndex(peekToken()) != Type.enumIndex(expected)) {
-            if (err == null) throw 'Expected token ${expected} but received ${peekToken()} at line ${lineNo}';
-            
-            throw err;
-        };
+		if (Type.enumIndex(token) != Type.enumIndex(expected)) {
+            throw 'Expected token ${expected.getName()} but received ${token.getName()} at line ${lineNo}';
+        } else {
+            return token;
+        }
 	}
 }
