@@ -80,11 +80,11 @@ class Lexer {
 					lineNo++;
 					state = KeyState;
                     return Newline;
-                case "=".code:
+                case '='.code:
 					advance();
                     state = ValueState;
                     return Equals;
-                case "#".code:
+                case '#'.code:
                     return readComment();
 				case '"'.code, "'".code:
 					throw "Quote support will be added in later versions!";
@@ -99,17 +99,12 @@ class Lexer {
 	function readKeyIdentifier():Token {
 		final start:Int = pos;
 
-		while (!isNewline(peek()) && !isEof(peek())) {
+		while (!isEqual(peek()) && !isNewline(peek()) && !isEof(peek())) {
+			if (!idChar[peek()]) invalidChar(peek());
 			advance();
-			if (!idChar[peek()]) break;
 		}
 
 		var keyIdentifier:String = StringTools.trim(query.substring(start, pos));
-
-		for (i in 0...keyIdentifier.length) {
-			if (!idChar[keyIdentifier.charCodeAt(i)]) invalidChar(keyIdentifier.charCodeAt(i));
-		}
-
 		return Key(keyIdentifier);
 	}
 
@@ -117,15 +112,11 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
+			if(!isAlphaNumeric(peek())) invalidChar(peek());
 			advance();
 		}
 
 		var value:String = query.substring(start, pos);
-
-		for (i in 0...value.length) {
-			if (!isAlphaNumeric(value.charCodeAt(i))) invalidChar(value.charCodeAt(i));
-		}
-
 		return Value(query.substring(start, pos));
 	}
 
@@ -150,6 +141,7 @@ class Lexer {
 	function invalidChar(char:Int) throw 'Unexpected char ${String.fromCharCode(char)} at line ${lineNo}!';
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
+	inline function isEqual(char:Int):Bool return char == '='.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
 	// inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code;
 
