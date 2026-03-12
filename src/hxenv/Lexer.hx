@@ -72,14 +72,16 @@ class Lexer {
 
     function token():Token {
 		while (true) {
-            final char = nextChar();
+            final char = peek();
 
             switch (char) {
 				case '\n'.code:
+					nextChar();
 					lineNo++;
 					state = KeyState;
                     return Newline;
                 case "=".code:
+					nextChar();
                     state = ValueState;
                     return Equals;
                 case "#".code:
@@ -95,7 +97,7 @@ class Lexer {
     }
 	
 	function readKeyIdentifier():Token {
-		final start:Int = pos - 1;
+		final start:Int = pos;
 
 		while (!isEof(peek()) && !isCommentPrefix(peek())) {
 			if (!idChar[peek()]) break;
@@ -112,19 +114,19 @@ class Lexer {
 	}
 
 	function readValue():Token {
-		final start:Int = pos - 1;
+		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
 			nextChar();
 		}
 
-		var value:String = query.substr(start, pos - start);
+		var value:String = query.substring(start, pos);
 
 		for (i in 0...value.length) {
 			if (isQuote(value.charCodeAt(i))) invalidChar(value.charCodeAt(i));
 		}
 
-		return Value(query.substr(start, pos - start));
+		return Value(query.substring(start, pos));
 	}
 
     function readComment():Token {
@@ -134,7 +136,7 @@ class Lexer {
 			nextChar();
 		}
 
-		return Comment(query.substr(start, pos - start));
+		return Comment(query.substring(start, pos));
 	}
 
     inline function nextChar():Int {
