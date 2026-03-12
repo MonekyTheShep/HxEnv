@@ -33,10 +33,8 @@ class Parser {
                     env.addChild(new Env(Comment, null, value));
             
                 case Equals:
-                    switch (tokens[pos - 1]) {
-                        default:
-                            throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
-                    }
+                    if (pos == 0) throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
+                    if (Type.enumIndex(tokens[pos - 1]) != Type.enumIndex(Key(""))) throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
 
                 case Newline:
                     lineNo++;
