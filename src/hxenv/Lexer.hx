@@ -46,7 +46,8 @@ class Lexer {
 		}
 
 		idChar["_".code] = true;
-		idChar[" ".code] = true;
+		idChar["-".code] = true;
+		idChar["$".code] = true;
 		idChar[".".code] = true;
 		idChar[0] = true;
 		return idChar;
@@ -87,7 +88,6 @@ class Lexer {
 					throw "Quote support will be added in later versions!";
                 default: 
 					if (isEof(char)) return Eof;
-					if (!idChar[char]) invalidChar(char);
 					if (state == KeyState) return readKeyIdentifier();
 					if (state == ValueState) return readValue();
             }
