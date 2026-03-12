@@ -67,14 +67,19 @@ class Parser {
 
     function readValue():String {
         expect(Equals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
-
-        var valueToken = expect(Value(""), 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
         
-        return switch valueToken { 
-            case Value(value):
+        return switch nextToken() {
+             case Value(value):
                 value; 
-            default: "";
-        } 
+            case MultiLineValue(values):
+                var stringBuf:StringBuf = new StringBuf();
+                for (val in values) {
+                    stringBuf.add(val);
+                }
+
+                stringBuf.toString();
+            default: throw "Expected VALUE after EQUALS at line ${lineNo}";
+        }
     }
 
     inline function peekToken():Token {
