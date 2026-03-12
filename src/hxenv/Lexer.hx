@@ -84,6 +84,7 @@ class Lexer {
                     return readComment();
                 default: 
 					if (isEof(char)) return Eof;
+					if (!idChar[char]) invalidChar(char);
 					if (state == KeyState) return readKeyIdentifier();
 					if (state == ValueState) return readValue();
             }
@@ -93,17 +94,19 @@ class Lexer {
 	function readKeyIdentifier():Token {
 		final start:Int = pos - 1;
 
-		while (idChar[peek()]) {
+		while (idChar[peek()] && !isEof(peek()) && !isCommentPrefix(peek())) {
 			nextChar();
 		}
 
+		trace(query.substr(start, pos - start));
+		
 		return Key(query.substr(start, pos - start));
 	}
 
 	function readValue():Token {
 		final start:Int = pos - 1;
 
-		while (!isNewline(peek()) && !isEof(peek())) {
+		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
 			nextChar();
 		}
 
@@ -131,7 +134,8 @@ class Lexer {
         return StringTools.fastCodeAt(query, pos);
     }
 
-
+	function invalidChar(char:Int) throw new haxe.Exception("Unexpected char '" + String.fromCharCode(char)+"'");
 	inline function isEof(char:Int):Bool return char == -1;
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
+	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
 }
