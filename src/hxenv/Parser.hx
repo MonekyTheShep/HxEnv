@@ -72,7 +72,6 @@ class Parser {
         
         return switch valueToken { 
             case Value(value):
-                trace(value); 
                 value; 
             default: "";
         } 
