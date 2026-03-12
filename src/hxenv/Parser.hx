@@ -2,59 +2,92 @@ package hxenv;
 
 import hxenv.Lexer.Token;
 
-
 class Parser {
-    static var lexer:Lexer = new Lexer();
-    public static function parseString(string:String):Env {
-        var tokens = lexer.lex(string);
-        trace(tokens);
-		return parse(tokens);
+    var tokens:Array<Token>;
+    var pos:Int;
+    var lineNo:Int;
+    
+    public function new() {}
+
+    public function parseString(string:String):Env {
+        var lexer:Lexer = new Lexer();
+		return parse(lexer.lex(string));
 	}
 
-    public static function parse(tokens:Array<Token>):Env
+    public function parse(args:Array<Token>):Env
     {
+        this.pos = 0;
+        this.lineNo = 0;
+        this.tokens = args;
+        trace(tokens);
+
         var env:Env = Env.createDocument();
 
-        var tokenIndex:Int = 0;
-        while (tokenIndex < tokens.length) {
-            switch tokens[tokenIndex] {
-                case Key(key):
-                    tokenIndex++;
-                    if (tokenIndex >= tokens.length || tokens[tokenIndex] != Equals) {
-                        throw "No equals sign after key";
-                    }
-                    tokenIndex++;
-                   
-                    switch (tokens[tokenIndex]) {
-                        case Value(value):
-                            env.addChild(Env.createKey(key, value));
-
-                        default:
-                            throw "Expected VALUE after EQUALS";
-
-                    }   
+        while (peekToken() != Eof) {
+            switch peekToken() {
+                case Key(_):
+                    env.addChild(parseKeyValue());
 
                 case Comment(value):
+                    nextToken();
                     env.addChild(new Env(Comment, null, value));
-                    tokenIndex++;
+            
+                case Equals:
+                    switch (tokens[pos - 1]) {
+                        default:
+                            throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
+                    }
 
                 case Newline:
-                    // skip token
-                    // or should i add a new line entry type?
-                    // trace("Found new line");
-                    tokenIndex++;
-
-                case Eof:
-                    break;
+                    lineNo++;
+                    nextToken();
 
                 default:
-                    tokenIndex++;   
-            }
+                    nextToken();
+                }
+           
         }
 
         return env;
     }
 
+    function parseKeyValue():Env {
+        var key:String = switch peekToken(){
+            case Key(key): key;
+            default: "";
+        };
+        
+        expect(Equals, 'No EQUALS sign after KEY at line ${lineNo}');
 
+        expect(Value(""), 'Expected VALUE after EQUALS at line ${lineNo}');
+                
 
+        var value:String = switch peekToken() {
+            case Value(value): value;
+            default: "";
+        }
+
+        return Env.createKey(key, value);
+    }
+
+    inline function peekToken(): Token {
+        return tokens[pos];
+    }
+
+    inline function nextToken(): Token {
+        return tokens[pos++];
+    }
+
+    /**
+        Checks if the next token meets the expected token by comparing the enum index.
+    **/
+    inline function expect(expected:Token, ?err:String):Void {
+		nextToken();
+    
+		if (Type.enumIndex(peekToken()) != Type.enumIndex(expected)) {
+            if (err != null) throw 'Expected token ${expected} but received ${peekToken()} at line ${lineNo}';
+            
+            throw err;
+        };
+	}
 }
