@@ -93,9 +93,9 @@ class Lexer {
                 case '#'.code:
                     return readComment();
 				case '`'.code:
-					throw "Quote support will be added in later versions!";
+					quoteError();
 				case '"'.code, "'".code:
-					throw "Quote support will be added in later versions!";
+					quoteError();
                 default: 
 					if (isEof(char)) return Eof;
 					if (state == KeyState) return readKeyIdentifier();
@@ -139,7 +139,7 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
-			if (isQuote(peek())) throw "Quote support will be added in later versions!";
+			if (isQuote(peek())) quoteError();
 			if(!isAlphaNumeric(peek()) && !isSpace(peek())) invalidChar(peek());
 			advance();
 		}
@@ -174,6 +174,7 @@ class Lexer {
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
 	inline function isSpace(char:Int):Bool return char == ' '.code;
 	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
+	function quoteError() throw 'Unexpected quote at line ${lineNo}, col ${col}! Quote support will be added in later revisions!';
 
 	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
 	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
