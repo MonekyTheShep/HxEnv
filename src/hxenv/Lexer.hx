@@ -99,8 +99,9 @@ class Lexer {
 	function readKeyIdentifier():Token {
 		final start:Int = pos;
 
-		while (!isEof(peek()) && !isCommentPrefix(peek())) {
+		while (!isNewline(peek()) && !isEof(peek())) {
 			advance();
+			if (!idChar[peek()]) break;
 		}
 
 		var keyValue:String = StringTools.trim(query.substring(start, pos));
