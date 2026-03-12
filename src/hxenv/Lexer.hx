@@ -123,7 +123,7 @@ class Lexer {
 		var value:String = query.substring(start, pos);
 
 		for (i in 0...value.length) {
-			if (isQuote(value.charCodeAt(i))) invalidChar(value.charCodeAt(i));
+			if (!isAlphaNumeric(value.charCodeAt(i))) invalidChar(value.charCodeAt(i));
 		}
 
 		return Value(query.substring(start, pos));
@@ -151,5 +151,10 @@ class Lexer {
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
-	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code;
+	// inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code;
+
+	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
+	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
+	inline function isAlphaNumeric(c:Int):Bool return isAlpha(c) || isDigit(c);
+	
 }
