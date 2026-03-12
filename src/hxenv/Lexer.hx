@@ -89,9 +89,9 @@ class Lexer {
                     return Equals;
                 case '#'.code:
                     return readComment();
-				case '`'.code:
-					quoteError();
-					return readMultiLine();
+				// case '`'.code:
+				// 	quoteError();
+				// 	return readMultiLine();
 				case '"'.code:
 					return readDoubleQuote();
 				case "'".code:
@@ -117,30 +117,30 @@ class Lexer {
 		return Key(keyIdentifier);
 	}
 
-	function readMultiLine():Token {
-		var quote = advance(); // Consume Starting Quote
+	// function readMultiLine():Token {
+	// 	var quote = advance(); // Consume Starting Quote
 
-		var lines:Array<String> = [];
-		var stringBuf:StringBuf = new StringBuf();
+	// 	var lines:Array<String> = [];
+	// 	var stringBuf:StringBuf = new StringBuf();
 
-		while (!isEof(peek()) && peek() != quote) {
-			if (peek() == '\n'.code) {
-				if (stringBuf.length > 0) lines.push(stringBuf.toString());
-				stringBuf = new StringBuf(); // Reset String Buffer
-				advance();
-				continue; // Skip new line
-			}
+	// 	while (!isEof(peek()) && peek() != quote) {
+	// 		if (peek() == '\n'.code) {
+	// 			if (stringBuf.length > 0) lines.push(stringBuf.toString());
+	// 			stringBuf = new StringBuf(); // Reset String Buffer
+	// 			advance();
+	// 			continue; // Skip new line
+	// 		}
 			
-			stringBuf.addChar(advance());
-		}
+	// 		stringBuf.addChar(advance());
+	// 	}
 
-		if (peek() == quote && stringBuf.length > 0) lines.push(stringBuf.toString()); // Push line if reached quote
+	// 	if (peek() == quote && stringBuf.length > 0) lines.push(stringBuf.toString()); // Push line if reached quote
 
-		if (isEof(peek())) throw 'Unclosed ` quotes';
+	// 	if (isEof(peek())) throw 'Unclosed ` quotes';
 
-		advance(); // Consume Ending Quote
-		return MultiLineValue(lines);
-	}
+	// 	advance(); // Consume Ending Quote
+	// 	return MultiLineValue(lines);
+	// }
 
 	function readSingleQuote():Token {
 		final quote = advance(); // Consume Starting Quote
@@ -163,7 +163,6 @@ class Lexer {
 		var stringBuf:StringBuf = new StringBuf();
 
 		while (!isEof(peek()) && peek() != quote) {
-			
 			if (isBackSlash(peek()) && !isEof(peekNext())) {
 				advance();
 				var next:Int = advance();
