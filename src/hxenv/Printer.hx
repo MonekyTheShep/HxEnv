@@ -2,6 +2,8 @@ package hxenv;
 
 class Printer {
 	static public function serialize(doc:Env):String {
+        if (doc.nodeType != Document) throw "Serialize can only be used on Document Node!";
+
 		final stringBuffer:StringBuf = new StringBuf();
 
 		for (child in doc.children) {
