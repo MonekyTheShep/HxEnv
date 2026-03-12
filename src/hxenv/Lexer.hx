@@ -97,8 +97,6 @@ class Lexer {
 		while (idChar[peek()] && !isEof(peek()) && !isCommentPrefix(peek())) {
 			nextChar();
 		}
-
-		trace(query.substr(start, pos - start));
 		
 		return Key(query.substr(start, pos - start));
 	}
