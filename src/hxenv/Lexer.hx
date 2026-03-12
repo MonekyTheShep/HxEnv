@@ -1,5 +1,7 @@
 package hxenv;
 
+import haxe.macro.Expr.Catch;
+
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Equals; // =
@@ -13,6 +15,7 @@ enum Token {
 enum LexerState {
 	KeyState;
 	ValueState;
+	MultiLineState;
 }
 
 class Lexer {
@@ -61,7 +64,7 @@ class Lexer {
 		this.col = 1;
 		this.state = KeyState;
 		
-       var result = [];
+       var result:Array<Token> = [];
 		while (true) {
 			var t = token();
 
@@ -74,7 +77,7 @@ class Lexer {
 
     function token():Token {
 		while (true) {
-            final char = peek();
+            final char:Int = peek();
 
             switch (char) {
 				case '\n'.code:
@@ -89,12 +92,14 @@ class Lexer {
                     return Equals;
                 case '#'.code:
                     return readComment();
+				case '`'.code:
+					throw "Quote support will be added in later versions!";
 				case '"'.code, "'".code:
 					throw "Quote support will be added in later versions!";
                 default: 
 					if (isEof(char)) return Eof;
 					if (state == KeyState) return readKeyIdentifier();
-					if (state == ValueState) return readValue();
+					if (state == ValueState && state != MultiLineState) return readValue();
             }
         }
     }
@@ -111,11 +116,31 @@ class Lexer {
 		return Key(keyIdentifier);
 	}
 
+	// function readMultiLine():Token {
+	// 	var quote = advance();
+	// 	var stringBuf:StringBuf = new StringBuf();
+
+	// 	while (!isEof(peek()) && peek() != quote) {
+	// 		if (peek() == '\n'.code) {
+	// 			advance();
+	// 			continue; // Skip new line
+	// 		}
+	// 		stringBuf.add(String.fromCharCode(advance()));
+	// 	}
+
+	// 	if (isEof(peek())) throw "Unclosed ` quotes";
+
+	// 	advance();
+	// 	trace(stringBuf.toString());
+	// 	return Value(stringBuf.toString());
+	// }
+
 	function readValue():Token {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
-			if(!isAlphaNumeric(peek())) invalidChar(peek());
+			if (isQuote(peek())) throw "Quote support will be added in later versions!";
+			if(!isAlphaNumeric(peek()) && !isSpace(peek())) invalidChar(peek());
 			advance();
 		}
 
@@ -147,7 +172,8 @@ class Lexer {
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isEqual(char:Int):Bool return char == '='.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
-	// inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code;
+	inline function isSpace(char:Int):Bool return char == ' '.code;
+	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code;
 
 	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
 	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
