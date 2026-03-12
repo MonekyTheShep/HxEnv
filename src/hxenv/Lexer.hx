@@ -101,7 +101,14 @@ class Lexer {
 			nextChar();
 		}
 
-		return Key(StringTools.trim(query.substr(start, pos - start)));
+
+		var keyValue:String = StringTools.trim(query.substr(start, pos - start));
+
+		for (i in 0...keyValue.length) {
+			if (!idChar[keyValue.charCodeAt(i)]) invalidChar(keyValue.charCodeAt(i));
+		}
+		
+		return Key(keyValue);
 	}
 
 	function readValue():Token {
