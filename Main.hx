@@ -11,7 +11,7 @@ class Main {
 
         var parser:Parser = new Parser();
 
-        var env:Env = parser.parseString(content);
+        var env:Env = Env.fromString(content);
 
         trace(env.get("KEY"));
         trace(env.get("KEY2"));

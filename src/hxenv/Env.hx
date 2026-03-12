@@ -203,5 +203,14 @@ class Env {
 		return Printer.serialize(this);
 	}
 
+	/**
+	 * Convert's a Env string into a Env instance
+	 * @return Env instance
+	 */
+	public static function fromString(string:String):Env {
+		var parser:Parser = new Parser();
+		return parser.parseString(string);
+	}
+
 	// add iterators later
 }
