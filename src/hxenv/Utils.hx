@@ -40,7 +40,7 @@ class Util {
         for (i in 0...value.length) {
             final char:Int = value.charCodeAt(i);
 
-            if (char == '\n'.code || char == ' '.code || char == "'".code || char == '"'.code || !valChar[char]) {
+            if (!valChar[char]) {
                 needQuotes = true;
                 break;
             }
