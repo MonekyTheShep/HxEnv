@@ -6,7 +6,6 @@ enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Equals; // =
 	Value(value:String); // 𝑥 = 𝑦
-	MultiLineValue(values:Array<String>);
 
 	Comment(value:String); // #{comment}
 	Newline; // \n
