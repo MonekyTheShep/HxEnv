@@ -6,8 +6,7 @@ The beginning of a ENV file Parser
 ## TODO
 
 ```
-Error checking move some outside of lexer
-Multiline support
+Check for Edge cases
 ```
 
 
