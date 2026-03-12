@@ -157,7 +157,6 @@ class Lexer {
 
 		advance(); // Consume Ending Quote
 		
-		state = KeyState; // Reset to Key State after reading Value
 		while (isSpace(peek())) advance(); // Skip white spaces after quote
 		return Value(stringBuf.toString());
 	}
@@ -165,11 +164,13 @@ class Lexer {
 	function readDoubleQuote():Token {
 		final quote = advance(); // Consume Starting Quote
 		var stringBuf:StringBuf = new StringBuf();
-
+		
 		while (!isEof(peek()) && peek() != quote) {
 			if (isBackSlash(peek()) && !isEof(peekNext())) {
 				advance();
 				var next:Int = advance();
+
+				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 
 				switch (next) {
 					case 'n'.code:
@@ -186,6 +187,7 @@ class Lexer {
 						stringBuf.add("'");
 					default:
 						stringBuf.addChar(next);
+					
 				}
 			} else {
 				stringBuf.addChar(advance());
@@ -196,7 +198,6 @@ class Lexer {
 
 		advance(); // Consume Ending Quote
 		
-		state = KeyState; // Reset to Key State after reading Value
 		while (isSpace(peek())) advance(); // Skip white spaces after quote
 		return Value(stringBuf.toString());
 	}
@@ -211,7 +212,6 @@ class Lexer {
 
 		var value:String = query.substring(start, pos);
 
-		state = KeyState; // Reset to Key State after reading Value
 		while (isSpace(peek())) advance(); // Skip white spaces after value
 		return Value(value);
 	}
