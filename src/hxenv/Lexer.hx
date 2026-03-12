@@ -1,7 +1,5 @@
 package hxenv;
 
-import hxenv.Utils.Util;
-
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Equals; // =
@@ -29,28 +27,6 @@ class Lexer {
     public function new(?verboseMode:Bool) {
 		this.verboseMode = false;
 
-	}
-
-    static var idChar:Map<Int, Bool> = populateIdChars();
-
-    static function populateIdChars():Map<Int, Bool> {
-		var idChar = new Map<Int, Bool>(); 
-
-		// populate identifier chars with bools at ascii positions
-		for (i in 'A'.code...'Z'.code + 1) {
-			idChar[i] = true;
-		}
-
-		for (i in 'a'.code...'z'.code + 1) {
-			idChar[i] = true;
-		}
-
-		for (i in '0'.code...'9'.code + 1) {
-			idChar[i] = true;
-		}
-
-		idChar["_".code] = true;
-		return idChar;
 	}
 
     public function lex(query:String):Array<Token> {
@@ -105,7 +81,7 @@ class Lexer {
 
 		if (isDigit(peek())) invalidChar(peek()); // First character can't start with digit.
 		while (!isEqual(peek()) && !isNewline(peek()) && !isEof(peek())) {
-			if (!idChar[peek()]) invalidChar(peek());
+			if (!Utils.idChar[peek()]) invalidChar(peek());
 			advance();
 		}
 
@@ -174,7 +150,7 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek()) && !isCommentPrefix(peek())) {
-			if(!Util.valChar[peek()]) invalidChar(peek());
+			if(!Utils.valChar[peek()]) invalidChar(peek());
 			advance();
 		}
 
