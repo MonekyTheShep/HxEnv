@@ -73,7 +73,7 @@ class Lexer {
     function token():Token {
 		while (true) {
             final char = peek();
-			
+
             switch (char) {
 				case '\n'.code:
 					advance();
@@ -130,7 +130,7 @@ class Lexer {
 	}
 
     function readComment():Token {
-		final start:Int = pos;
+		final start:Int = pos + 1;
 
 		while (!isNewline(peek()) && !isEof(peek())) {
 			advance();
