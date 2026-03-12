@@ -173,7 +173,7 @@ class Lexer {
 	inline function isEqual(char:Int):Bool return char == '='.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
 	inline function isSpace(char:Int):Bool return char == ' '.code;
-	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code;
+	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
 
 	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
 	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
