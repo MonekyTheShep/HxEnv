@@ -4,8 +4,8 @@ import hxenv.Lexer.Token;
 
 
 class Parser {
+    static var lexer:Lexer = new Lexer();
     public static function parseString(string:String):Env {
-        var lexer:Lexer = new Lexer();
         var tokens = lexer.lex(string);
         trace(tokens);
 		return parse(tokens);
@@ -28,7 +28,7 @@ class Parser {
                     switch (tokens[tokenIndex]) {
                         case Value(value):
                             env.addChild(Env.createKey(key, value));
-                            
+
                         default:
                             throw "Expected VALUE after EQUALS";
 
@@ -45,7 +45,7 @@ class Parser {
                     tokenIndex++;
 
                 case Eof:
-                    return env;
+                    break;
 
                 default:
                     tokenIndex++;   
@@ -54,4 +54,7 @@ class Parser {
 
         return env;
     }
+
+
+
 }
