@@ -101,7 +101,7 @@ class Lexer {
 			nextChar();
 		}
 
-		return Key(query.substr(start, pos - start));
+		return Key(StringTools.trim(query.substr(start, pos - start)));
 	}
 
 	function readValue():Token {
