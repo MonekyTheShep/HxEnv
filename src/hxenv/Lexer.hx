@@ -154,6 +154,7 @@ class Lexer {
 
 		advance(); // Consume Ending Quote
 		
+		state = KeyState; // Reset to Key State after reading Value
 		while (isSpace(peek())) advance(); // Skip white spaces after quote
 		return Value(stringBuf.toString());
 	}
@@ -181,7 +182,7 @@ class Lexer {
 					case "'".code:
 						stringBuf.add("'");
 					default:
-						stringBuf.add(next);
+						stringBuf.addChar(next);
 				}
 			} else {
 				stringBuf.addChar(advance());
@@ -192,6 +193,7 @@ class Lexer {
 
 		advance(); // Consume Ending Quote
 		
+		state = KeyState; // Reset to Key State after reading Value
 		while (isSpace(peek())) advance(); // Skip white spaces after quote
 		return Value(stringBuf.toString());
 	}
@@ -207,9 +209,8 @@ class Lexer {
 
 		var value:String = query.substring(start, pos);
 
-		while (isSpace(peek())) advance(); // Skip white spaces after value
-
 		state = KeyState; // Reset to Key State after reading Value
+		while (isSpace(peek())) advance(); // Skip white spaces after value
 		return Value(value);
 	}
 
