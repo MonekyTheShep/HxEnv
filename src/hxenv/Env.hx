@@ -199,7 +199,7 @@ class Env {
 	 * Convert's this into a readable string.
 	 * @return String Value
 	 */
-	@:to public function toString():String {
+	public function toString():String {
 		return Printer.serialize(this);
 	}
 
