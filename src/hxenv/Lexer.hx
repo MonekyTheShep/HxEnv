@@ -117,7 +117,7 @@ class Lexer {
 		}
 
 		var value:String = query.substring(start, pos);
-		return Value(query.substring(start, pos));
+		return Value(value);
 	}
 
     function readComment():Token {
