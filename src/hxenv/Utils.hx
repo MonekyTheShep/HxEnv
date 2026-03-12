@@ -16,7 +16,7 @@ class Util {
         }
 
         if (needQuotes) {
-            final escaped:String = StringTools.replace(value, '"', '\"');
+            final escaped:String = StringTools.replace(value, '"', '\\"');
             return '"${escaped}"';
         }
 
