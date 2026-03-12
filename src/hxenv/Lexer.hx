@@ -53,6 +53,38 @@ class Lexer {
 		return idChar;
 	}
 
+
+    static var valChar:Map<Int, Bool> = populateValChars();
+
+    static function populateValChars():Map<Int, Bool> {
+		var valChar = new Map<Int, Bool>(); 
+
+		// populate value chars with bools at ascii positions
+		for (i in 'A'.code...'Z'.code + 1) {
+			valChar[i] = true;
+		}
+
+		for (i in 'a'.code...'z'.code + 1) {
+			valChar[i] = true;
+		}
+
+		for (i in '0'.code...'9'.code + 1) {
+			valChar[i] = true;
+		}
+
+		valChar["_".code] = true;
+		valChar[".".code] = true;
+		valChar["-".code] = true;
+		valChar["/".code] = true;
+		valChar[":".code] = true;
+		valChar["@".code] = true;
+		valChar["%".code] = true;
+		valChar["+".code] = true;
+		valChar[",".code] = true;
+		valChar["=".code] = true;
+		return valChar;
+	}
+
     public function lex(query:String):Array<Token> {
         this.query = StringTools.replace(query, "\r\n", "\n");
 		this.pos = 0;
@@ -88,9 +120,6 @@ class Lexer {
                     return Equals;
                 case '#'.code:
                     return readComment();
-				// case '`'.code:
-				// 	quoteError();
-				// 	return readMultiLine();
 				case '"'.code:
 					return readDoubleQuote();
 				case "'".code:
@@ -115,31 +144,6 @@ class Lexer {
 		var keyIdentifier:String = StringTools.trim(query.substring(start, pos));
 		return Key(keyIdentifier);
 	}
-
-	// function readMultiLine():Token {
-	// 	var quote = advance(); // Consume Starting Quote
-
-	// 	var lines:Array<String> = [];
-	// 	var stringBuf:StringBuf = new StringBuf();
-
-	// 	while (!isEof(peek()) && peek() != quote) {
-	// 		if (peek() == '\n'.code) {
-	// 			if (stringBuf.length > 0) lines.push(stringBuf.toString());
-	// 			stringBuf = new StringBuf(); // Reset String Buffer
-	// 			advance();
-	// 			continue; // Skip new line
-	// 		}
-			
-	// 		stringBuf.addChar(advance());
-	// 	}
-
-	// 	if (peek() == quote && stringBuf.length > 0) lines.push(stringBuf.toString()); // Push line if reached quote
-
-	// 	if (isEof(peek())) throw 'Unclosed ` quotes';
-
-	// 	advance(); // Consume Ending Quote
-	// 	return MultiLineValue(lines);
-	// }
 
 	function readSingleQuote():Token {
 		final quote = advance(); // Consume Starting Quote
@@ -201,8 +205,7 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek()) && !isCommentPrefix(peek())) {
-			if (isQuote(peek())) quoteError();
-			if(!isAlphaNumeric(peek())) invalidChar(peek());
+			if(!valChar[peek()]) invalidChar(peek());
 			advance();
 		}
 
@@ -240,7 +243,6 @@ class Lexer {
 	// Helper Functions
 	//----------------------------------------------------------------------------------
 	function invalidChar(char:Int) throw 'Unexpected char \'${String.fromCharCode(char)}\' at line ${lineNo}, col ${col}!';
-	function quoteError() throw 'Unexpected backtick quote or double quote at line ${lineNo}, col ${col}! Support will be added in later revisions!';
 
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
@@ -250,7 +252,6 @@ class Lexer {
 	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
 	inline function isBackSlash(char:Int):Bool return char == '\\'.code;
 	
-
 	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
 	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
 	inline function isAlphaNumeric(c:Int):Bool return isAlpha(c) || isDigit(c);
