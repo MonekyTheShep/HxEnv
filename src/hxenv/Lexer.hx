@@ -75,6 +75,7 @@ class Lexer {
 
             switch (char) {
 				case '\n'.code:
+					lineNo++;
 					state = KeyState;
                     return Newline;
                 case "=".code:
@@ -97,7 +98,7 @@ class Lexer {
 		while (idChar[peek()] && !isEof(peek()) && !isCommentPrefix(peek())) {
 			nextChar();
 		}
-		
+
 		return Key(query.substr(start, pos - start));
 	}
 
@@ -132,7 +133,7 @@ class Lexer {
         return StringTools.fastCodeAt(query, pos);
     }
 
-	function invalidChar(char:Int) throw new haxe.Exception("Unexpected char '" + String.fromCharCode(char)+"'");
+	function invalidChar(char:Int) throw 'Unexpected char ${String.fromCharCode(char)} at line ${lineNo}!';
 	inline function isEof(char:Int):Bool return char == -1;
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
