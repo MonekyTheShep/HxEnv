@@ -99,7 +99,7 @@ class Lexer {
                 default: 
 					if (isEof(char)) return Eof;
 					if (state == KeyState) return readKeyIdentifier();
-					if (state == ValueState && state != MultiLineState) return readValue();
+					if (state == ValueState) return readValue();
             }
         }
     }
