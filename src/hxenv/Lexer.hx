@@ -110,7 +110,7 @@ class Lexer {
 		var stringBuf:StringBuf = new StringBuf();
 		
 		while (!isEof(peek()) && peek() != quote) {
-			if (isBackSlash(peek()) && !isEof(peekNext())) {
+			if (isBackSlash(peek())) {
 				advance(); // Consume Escape Character
 				var next:Int = advance(); // Consume next character after Escape Character
 
