@@ -135,7 +135,7 @@ class Lexer {
 				}
 			} else {
 				if (isNewline(peek())) {
-					lineNo = 1;
+					lineNo++;
 					col = 1;
 				} 
 				stringBuf.addChar(advance());
