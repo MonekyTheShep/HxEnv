@@ -29,7 +29,7 @@ class Parser {
                     env.addChild(parseKeyValue());
 
                 case Comment(value):
-                    nextToken();
+                    consumeToken();
                     env.addChild(new Env(Comment, null, value));
             
                 case Equals:
@@ -40,10 +40,10 @@ class Parser {
 
                 case Newline:
                     lineNo++;
-                    nextToken();
+                    consumeToken();
 
                 default:
-                    nextToken();
+                    consumeToken();
             }
         }
 
@@ -59,7 +59,7 @@ class Parser {
     }
 
     function readKey():String {
-        return switch nextToken() { // Consume Key
+        return switch consumeToken() { // Consume Key
             case Key(key): key;
             default: "";
         };
@@ -68,7 +68,7 @@ class Parser {
     function readValue():String {
         expect(Equals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
         
-        var valueToken = expect(Value(""), 'Expected VALUE after EQUALS at line ${lineNo}');
+        var valueToken = expect(Value(""), 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
 
         return switch valueToken {
              case Value(value):
@@ -81,7 +81,7 @@ class Parser {
         return tokens[pos];
     }
 
-    inline function nextToken():Token {
+    inline function consumeToken():Token {
         return tokens[pos++];
     }
 
@@ -89,7 +89,7 @@ class Parser {
         Checks if token meets the expected token by comparing the enum index while consuming token.
     **/
     function expect(expected:Token, ?err:String):Token {
-		final token:Token = nextToken();
+		final token:Token = consumeToken();
     
 		if (Type.enumIndex(token) != Type.enumIndex(expected)) {
             if (err != null) throw err;
