@@ -134,6 +134,10 @@ class Lexer {
 					
 				}
 			} else {
+				if (isNewline(peek())) {
+					lineNo = 1;
+					col = 1;
+				} 
 				stringBuf.addChar(advance());
 			}
 		}
@@ -149,15 +153,13 @@ class Lexer {
 	function readValue():Token {
 		final start:Int = pos;
 
-		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek()) && !isCommentPrefix(peek())) {
-			trace(String.fromCharCode(peek()));
+		while (!isNewline(peek()) && !isEof(peek()) && !isCommentPrefix(peek())) {
 			if(!Utils.valChar[peek()]) invalidChar(peek());
 			advance();
 		}
 
 		var value:String = query.substring(start, pos);
 
-		if (value.length == 0) invalidChar(peek()); // If empty value throw error
 		while (isSpace(peek())) advance(); // Skip white spaces after value
 		return Value(value);
 	}
