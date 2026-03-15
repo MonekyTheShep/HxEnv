@@ -11,8 +11,6 @@ class Main {
         trace(env.get("KEY"));
         trace(env.get("KEY2"));
 
-        env.set("€", "gay");
-
         var out = File.write(Sys.getCwd() + '/testout.env');
         
         try {
