@@ -59,6 +59,7 @@ class Lexer {
 					state = KeyState;
                     return Newline;
                 case '='.code:
+					if (state == ValueState) return readValue(); // If state is already value state return value
 					advance();
                     state = ValueState;
                     return Equals;
