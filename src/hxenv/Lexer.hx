@@ -47,6 +47,7 @@ class Lexer {
 
     function token():Token {
 		while (true) {
+			while (isSpace(peek()) && !isEof(peek())) advance(); // Skip white spaces
             final char:Int = peek();
 
             switch (char) {
@@ -100,7 +101,6 @@ class Lexer {
 
 		advance(); // Consume Ending Quote
 		
-		while (isSpace(peek())) advance(); // Skip white spaces after quote
 		return Value(stringBuf.toString());
 	}
 
@@ -111,9 +111,8 @@ class Lexer {
 		while (!isEof(peek()) && peek() != quote) {
 			if (isBackSlash(peek())) {
 				advance(); // Consume Escape Character
-				var next:Int = advance(); // Consume next character after Escape Character
-
 				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+				var next:Int = advance(); // Consume next character after Escape Character
 
 				switch (next) {
 					case 'n'.code:
@@ -145,7 +144,6 @@ class Lexer {
 
 		advance(); // Consume Ending Quote
 		
-		while (isSpace(peek())) advance(); // Skip white spaces after quote
 		return Value(stringBuf.toString());
 	}
 	
@@ -158,8 +156,7 @@ class Lexer {
 		}
 
 		var value:String = query.substring(start, pos);
-
-		while (isSpace(peek())) advance(); // Skip white spaces after value
+		
 		if(value.length == 0) return null;
 		return Value(value);
 	}
@@ -196,7 +193,7 @@ class Lexer {
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isEqual(char:Int):Bool return char == '='.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
-	inline function isSpace(char:Int):Bool return char == ' '.code;
+	inline function isSpace(char:Int):Bool return char == ' '.code || char == '\t'.code;
 	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
 	inline function isBackSlash(char:Int):Bool return char == '\\'.code;
 	
