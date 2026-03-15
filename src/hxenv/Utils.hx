@@ -72,7 +72,7 @@ class Utils {
 		for (i in 0...value.length) {
 			final char:Int = value.charCodeAt(i);
 
-			if (!valChar[char]) {
+			if (char == ' '.code || char == '\n'.code || char == '"'.code || char == "'".code) {
 				needQuotes = true;
 				break;
 			}
