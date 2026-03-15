@@ -12,6 +12,7 @@ class Printer {
                             stringBuffer.add("#" + child.nodeValue);
 					        stringBuffer.add("\n");
                 case KeyValue:
+                            Utils.validateKey(child.nodeName); Utils.validateValue(child.nodeValue);
                             stringBuffer.add(child.nodeName + "=");
 					        stringBuffer.add(Utils.normaliseValue(child.nodeValue));
                             stringBuffer.add("\n");
