@@ -1,5 +1,6 @@
 package hxenv;
 
+import haxe.iterators.ArrayIterator;
 import hxenv.types.EntryType;
 
 /**
@@ -214,5 +215,19 @@ class Env {
 		return parser.parseString(string);
 	}
 
-	// add iterators later
+	/**
+	 * Filters through children looking for Comment Nodes.
+	 * @return Array Iterator of Comment Nodes.
+	**/
+	public function comments():ArrayIterator<Env> {
+		return children.filter(child -> child.nodeType == Comment).iterator();
+	}
+
+	/**
+	 * Filters through children looking for KeyValue Nodes.
+	 * @return Array Iterator of KeyValue Nodes
+	**/
+	public function keyValues():ArrayIterator<Env> {
+		return children.filter(child -> child.nodeType == KeyValue).iterator();
+	}
 }
