@@ -3,10 +3,10 @@ package hxenv;
 enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Equals; // =
-	Value(value:String); // 𝑥 = 𝑦
+	RawValue(value:String); // 𝑥 = 𝑦
 
-	SingleQuote(value:String);
-	DoubleQuote(value:String);
+	SingleQuoteValue(value:String);
+	DoubleQuoteValue(value:String);
 	Comment(value:String); // #{comment}
 	Newline; // \n
 	Eof; // end of file
@@ -59,7 +59,7 @@ class Lexer {
 
 			if (isEof(peek())) {
 				if (state == ValueState) { // Value edge case
-						tokenQueue.push(Value(""));
+						tokenQueue.push(RawValue(""));
 						state = KeyState;
 						return null;
 				}
@@ -75,7 +75,7 @@ class Lexer {
 					lineNo++;
 					col = 1;
 					if (state == ValueState) { // Value edge case
-						tokenQueue.push(Value(""));
+						tokenQueue.push(RawValue(""));
 						tokenQueue.push(Newline);
 						state = KeyState;
 						return null;
@@ -83,20 +83,20 @@ class Lexer {
 					state = KeyState;
                     return Newline;
                 case '='.code:
-					if (state == ValueState) return readValue(); // If state is already value state return value
+					if (state == ValueState) return readRawValue(); // If state is already value state return value
 					advance();
                     state = ValueState;
                     return Equals;
                 case '#'.code:
                     return readComment();
 				case '"'.code:
-					return readDoubleQuote();
+					return readDoubleQuoteValue();
 				case "'".code:
-					return readSingleQuote();
+					return readSingleQuoteValue();
                 default: 
 					
 					if (state == KeyState) return readKeyIdentifier();
-					if (state == ValueState) return readValue();
+					if (state == ValueState) return readRawValue();
             }
         }
     }
@@ -114,7 +114,7 @@ class Lexer {
 		return Key(keyIdentifier);
 	}
 
-	function readSingleQuote():Token {
+	function readSingleQuoteValue():Token {
 		final quote = advance(); // Consume Starting Quote
 		var stringBuf:StringBuf = new StringBuf();
 
@@ -127,10 +127,10 @@ class Lexer {
 		advance(); // Consume Ending Quote
 
 		state = KeyState;
-		return SingleQuote(stringBuf.toString());
+		return SingleQuoteValue(stringBuf.toString());
 	}
 
-	function readDoubleQuote():Token {
+	function readDoubleQuoteValue():Token {
 		final quote = advance(); // Consume Starting Quote
 		var stringBuf:StringBuf = new StringBuf();
 		
@@ -173,10 +173,10 @@ class Lexer {
 		advance(); // Consume Ending Quote
 		state = KeyState;
 		
-		return DoubleQuote(stringBuf.toString());
+		return DoubleQuoteValue(stringBuf.toString());
 	}
 	
-	function readValue():Token {
+	function readRawValue():Token {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek())) {
@@ -188,7 +188,7 @@ class Lexer {
 		
 		state = KeyState;
 		// if(value.length == 0) return null;
-		return Value(value);
+		return RawValue(value);
 	}
 
     function readComment():Token {
