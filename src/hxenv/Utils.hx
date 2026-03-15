@@ -1,10 +1,12 @@
 package hxenv;
 
-class Utils {
-    public static var valChar:Map<Int, Bool> = populateValChars();
+using StringTools;
 
-    static function populateValChars():Map<Int, Bool> {
-		var valChar = new Map<Int, Bool>(); 
+class Utils {
+	public static var valChar:Map<Int, Bool> = populateValChars();
+
+	static function populateValChars():Map<Int, Bool> {
+		var valChar = new Map<Int, Bool>();
 
 		// populate value chars with bools at ascii positions
 		for (i in 'A'.code...'Z'.code + 1) {
@@ -32,10 +34,10 @@ class Utils {
 		return valChar;
 	}
 
-    public static var idChar:Map<Int, Bool> = populateIdChars();
+	public static var idChar:Map<Int, Bool> = populateIdChars();
 
-    static function populateIdChars():Map<Int, Bool> {
-		var idChar = new Map<Int, Bool>(); 
+	static function populateIdChars():Map<Int, Bool> {
+		var idChar = new Map<Int, Bool>();
 
 		// populate identifier chars with bools at ascii positions
 		for (i in 'A'.code...'Z'.code + 1) {
@@ -54,26 +56,33 @@ class Utils {
 		return idChar;
 	}
 
-    public static function normaliseValue(value:String) {
-        if (value.length == 0 || value == null) return "";
+	public static function validateKey(key:String) {
+		for (char in key) {
+			if (!Utils.idChar[char])
+				throw 'Unexpected char \'${String.fromCharCode(char)}\' in key: ${key}!';
+		}
+	}
 
-        var needQuotes:Bool = false;
+	public static function normaliseValue(value:String) {
+		if (value.length == 0 || value == null)
+			return "";
 
-        for (i in 0...value.length) {
-            final char:Int = value.charCodeAt(i);
+		var needQuotes:Bool = false;
 
-            if (!valChar[char]) {
-                needQuotes = true;
-                break;
-            }
-        }
+		for (i in 0...value.length) {
+			final char:Int = value.charCodeAt(i);
 
-        if (needQuotes) {
-            final escaped:String = StringTools.replace(value, '"', '\\"');
-            return '"${escaped}"';
-        }
+			if (!valChar[char]) {
+				needQuotes = true;
+				break;
+			}
+		}
 
-        return value;
+		if (needQuotes) {
+			final escaped:String = StringTools.replace(value, '"', '\\"');
+			return '"${escaped}"';
+		}
 
-    }
+		return value;
+	}
 }
