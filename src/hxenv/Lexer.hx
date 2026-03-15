@@ -80,7 +80,7 @@ class Lexer {
 		final start:Int = pos;
 
 		if (isDigit(peek())) invalidChar(peek()); // First character can't start with digit.
-		while (!isEqual(peek()) && !isNewline(peek()) && !isEof(peek())) {
+		while (!isEqual(peek()) && !isSpace(peek()) && !isNewline(peek()) && !isEof(peek())) {
 			if (!Utils.idChar[peek()]) invalidChar(peek());
 			advance();
 		}
