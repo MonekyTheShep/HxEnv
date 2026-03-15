@@ -9,8 +9,6 @@ class Main {
     static function main() {        
         var content:String = File.getContent("test.env");
 
-        var parser:Parser = new Parser();
-
         var env:Env = Env.fromString(content);
 
         trace(env.get("KEY"));
