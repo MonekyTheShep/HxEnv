@@ -84,6 +84,7 @@ class Env {
 	 * @return Env
 	 */
 	public static function createKey(k:String, v:String):Env {
+		Utils.validateKey(k);
 		return new Env(KeyValue, k, v);
 	}
 
@@ -175,6 +176,7 @@ class Env {
 	 * @param value The value.
 	 */
 	public function set(name:String, value:String):Void {
+		Utils.validateKey(name);
 		if (nodeType == Document) {
 			for (child in children) {
 				if (child.nodeType == KeyValue && child.nodeName == name) {
