@@ -13,7 +13,6 @@ enum Token {
 enum LexerState {
 	KeyState;
 	ValueState;
-	MultiLineState;
 }
 
 class Lexer {
@@ -26,7 +25,6 @@ class Lexer {
 
     public function new(?verboseMode:Bool) {
 		this.verboseMode = false;
-
 	}
 
     public function lex(query:String):Array<Token> {
