@@ -25,22 +25,22 @@ class Parser {
 
         var env:Env = Env.createDocument();
 
-        while (peekToken() != Eof) {
+        while (peekToken() != TEof) {
             switch peekToken() {
-                case Key(_):
+                case TKey(_):
                     final result = parseKeyValue();
                     env.set(result.key, result.value, result.variant);
-                case Comment(value):
+                case TComment(value):
                     consumeToken();
                     env.addChild(new Env(Comment, null, value));
             
-                case Equals:
+                case TEquals:
                     throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
 
-                case RawValue(_):
+                case TValue(_):
                     throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
 
-                case Newline:
+                case TNewline:
                     lineNo++;
                     consumeToken();
 
@@ -62,23 +62,28 @@ class Parser {
 
     function readKey():String {
         return switch consumeToken() { // Consume Key
-            case Key(key): key;
+            case TKey(key): key;
             default: "";
         };
     }
 
     function readValue():{value : String, variant : KeyValueVariant} {
-        expect(Equals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
+        expect(TEquals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
         
-        var valueToken = expect([RawValue(""), SingleQuoteValue(""), DoubleQuoteValue("")], 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
+        var valueToken = expect(TValue(), 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
 
         return switch valueToken {
-            case RawValue(value):
-                {value: value, variant: Raw}; 
-            case SingleQuoteValue(value):
-                {value: value, variant: SingleQuote}; 
-            case DoubleQuoteValue(value):
-                {value: value, variant: DoubleQuote}; 
+            case TValue(value, variant):
+                var result = switch (variant) {
+                    case TRaw:
+                        Raw;
+                    case TDoubleQuote:
+                        DoubleQuote;
+                    case TSingleQuote:
+                        SingleQuote;
+                };
+                
+                {value: value, variant: result}; 
             default: {value: "", variant: Raw};
         }
     }
