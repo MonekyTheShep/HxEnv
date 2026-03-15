@@ -59,7 +59,14 @@ class Utils {
 	public static function validateKey(key:String) {
 		for (char in key) {
 			if (!Utils.idChar[char])
-				throw 'Unexpected char \'${String.fromCharCode(char)}\' in key: ${key}!';
+				throw 'Unexpected char \'${String.fromCharCode(char)}\' in key: "${key}"!';
+		}
+	}
+
+	public static function validateValue(value:String) {
+		for (char in value) {
+			if (!Utils.valChar[char] && !isSpecialChar(char))
+				throw 'Unexpected char \'${String.fromCharCode(char)}\' in value: "${value}"!';
 		}
 	}
 
@@ -72,7 +79,7 @@ class Utils {
 		for (i in 0...value.length) {
 			final char:Int = value.charCodeAt(i);
 
-			if (char == ' '.code || char == '\n'.code || char == '"'.code || char == "'".code) {
+			if (isSpecialChar(char)) {
 				needQuotes = true;
 				break;
 			}
@@ -85,4 +92,6 @@ class Utils {
 
 		return value;
 	}
+
+	inline static function isSpecialChar(char:Int) return char == ' '.code || char == '\n'.code || char == '"'.code || char == "'".code;
 }
