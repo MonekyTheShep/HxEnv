@@ -123,7 +123,7 @@ class Env {
 	 * Adds/Pushes a child into the tree.
 	 * @param x child
 	 */
-	public function addChild<T:Env>(x:T):T {
+	public function addChild(x:Env):Env {
 		// returns if the child is disposed
 		if (__disposed) {
 			return null;
@@ -133,6 +133,7 @@ class Env {
 		if (x.parent != null) {
 			x.parent.removeChild(x);
 		}
+		
 		children.push(x);
 		x.parent = this;
 		return x;
