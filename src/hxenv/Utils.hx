@@ -64,40 +64,21 @@ class Utils {
 		}
 	}
 
-	public static function validateValue(value:String, key:String) {
+	public static function validateRawValue(value:String, key:String) {
 		for (char in value) {
 			if (!Utils.valChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
 		}
 	}
 
-	public static function validateSingleQuote(value:String, key:String) {
+	public static function validateSingleQuotedValue(value:String, key:String) {
 		for (char in value) {
-			if (char == "'".code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
+			if (char == "'".code && char == '\n'.code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
 		}
 	}
 
-	public static function normaliseValue(value:String) {
-		if (value.length == 0 || value == null)
-			return '""';
-
-		var needQuotes:Bool = false;
-
-		for (i in 0...value.length) {
-			final char:Int = value.charCodeAt(i);
-
-			if (isSpecialChar(char)) {
-				needQuotes = true;
-				break;
-			}
+	public static function validateComment(value:String) {
+		for (char in value) {
+			if (char == "\n".code) throw 'Unexpected char `${String.fromCharCode(char)}` in comment: "${value}"!';
 		}
-
-		if (needQuotes) {
-			final escaped:String = StringTools.replace(value, '"', '\\"');
-			return '"${escaped}"';
-		}
-
-		return value;
 	}
-
-	inline static function isSpecialChar(char:Int) return char == ' '.code || char == '\n'.code || char == '"'.code || char == "'".code;
 }
