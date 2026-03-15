@@ -72,7 +72,7 @@ class Utils {
 
 	public static function validateSingleQuotedValue(value:String, key:String) {
 		for (char in value) {
-			if (char == "'".code && char == '\n'.code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
+			if (char == "'".code || char == '\n'.code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
 		}
 	}
 
