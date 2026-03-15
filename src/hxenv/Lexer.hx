@@ -23,6 +23,7 @@ class Lexer {
 	var lineNo:Int;
 	var col:Int;
 	var state:LexerState;
+	var tokenQueue:Array<Token>;
     public var verboseMode:Bool;
 
     public function new(?verboseMode:Bool) {
@@ -35,6 +36,7 @@ class Lexer {
 		this.lineNo = 1;
 		this.col = 1;
 		this.state = KeyState;
+		this.tokenQueue = new Array<Token>();
 		
        var result:Array<Token> = [];
 		while (true) {
@@ -49,7 +51,23 @@ class Lexer {
 
     function token():Token {
 		while (true) {
+			if (tokenQueue.length > 0) {
+				return tokenQueue.shift();
+			}
+			
 			while (isSpace(peek()) && !isEof(peek())) advance(); // Skip white spaces
+
+			if (isEof(peek())) {
+				if (state == ValueState) { // Value edge case
+						tokenQueue.push(Value(""));
+						tokenQueue.push(Newline);
+						state = KeyState;
+						return null;
+				}
+				return Eof;
+			} 
+
+
             final char:Int = peek();
 
             switch (char) {
@@ -57,6 +75,12 @@ class Lexer {
 					advance();
 					lineNo++;
 					col = 1;
+					if (state == ValueState) { // Value edge case
+						tokenQueue.push(Value(""));
+						tokenQueue.push(Newline);
+						state = KeyState;
+						return null;
+					}
 					state = KeyState;
                     return Newline;
                 case '='.code:
@@ -71,7 +95,7 @@ class Lexer {
 				case "'".code:
 					return readSingleQuote();
                 default: 
-					if (isEof(char)) return Eof;
+					
 					if (state == KeyState) return readKeyIdentifier();
 					if (state == ValueState) return readValue();
             }
@@ -102,7 +126,8 @@ class Lexer {
 		if (isEof(peek()) || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
-		
+
+		state = KeyState;
 		return SingleQuote(stringBuf.toString());
 	}
 
@@ -147,6 +172,7 @@ class Lexer {
 		if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
+		state = KeyState;
 		
 		return DoubleQuote(stringBuf.toString());
 	}
@@ -161,7 +187,8 @@ class Lexer {
 
 		var value:String = query.substring(start, pos);
 		
-		if(value.length == 0) return null;
+		state = KeyState;
+		// if(value.length == 0) return null;
 		return Value(value);
 	}
 
