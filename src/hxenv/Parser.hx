@@ -84,7 +84,7 @@ class Parser {
                 };
                 
                 {value: value, variant: result}; 
-            default: throw "What.";
+            default: throw 'Expected VALUE after EQUALS at line ${lineNo}'; // It shouldn't reach this but ill just add it.
         }
     }
 
