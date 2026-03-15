@@ -219,7 +219,7 @@ class Env {
 	 * Filters through children looking for Comment Nodes.
 	 * @return Array Iterator of Comment Nodes.
 	**/
-	public function comments():ArrayIterator<Env> {
+	public function comments():Iterator<Env> {
 		return children.filter(child -> child.nodeType == Comment).iterator();
 	}
 
@@ -227,7 +227,7 @@ class Env {
 	 * Filters through children looking for KeyValue Nodes.
 	 * @return Array Iterator of KeyValue Nodes
 	**/
-	public function keyValues():ArrayIterator<Env> {
+	public function keyValues():Iterator<Env> {
 		return children.filter(child -> child.nodeType == KeyValue).iterator();
 	}
 }
