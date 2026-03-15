@@ -1,5 +1,7 @@
 package hxenv;
 
+import hxenv.types.NodeType.KeyValueVariant;
+import haxe.extern.EitherType;
 import hxenv.Lexer.Token;
 
 class Parser {
@@ -53,9 +55,9 @@ class Parser {
     function parseKeyValue():Env {
         var key:String = readKey();
        
-        var value:String = readValue();
+        var result = readValue();
 
-        return Env.createKey(key, value);
+        return Env.createKey(key, result.value, result.variant);
     }
 
     function readKey():String {
@@ -65,15 +67,19 @@ class Parser {
         };
     }
 
-    function readValue():String {
+    function readValue():{value : String, variant : KeyValueVariant} {
         expect(Equals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
         
-        var valueToken = expect(Value(""), 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
+        var valueToken = expect([Value(""), SingleQuote(""), DoubleQuote("")], 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
 
         return switch valueToken {
-             case Value(value):
-                value; 
-            default: "";
+            case Value(value):
+                {value: value, variant: Raw}; 
+            case SingleQuote(value):
+                {value: value, variant: SingleQuote}; 
+            case DoubleQuote(value):
+                {value: value, variant: DoubleQuote}; 
+            default: {value: "", variant: Raw};
         }
     }
 
@@ -88,12 +94,35 @@ class Parser {
     /**
         Checks if token meets the expected token by comparing the enum index while consuming token.
     **/
-    function expect(expected:Token, ?err:String):Token {
+    function expect(expected:EitherType<Token, Array<Token>>, ?err:String):Token {
 		final token:Token = consumeToken();
-    
-		if (Type.enumIndex(token) != Type.enumIndex(expected)) {
+
+        var containExpected:Bool = false;
+        if (Std.isOfType(expected, Array)) {
+            var tokens:Array<Token> = expected;
+            for (t in tokens) {
+                if (t.getIndex() == token.getIndex()) {
+                    containExpected = true;
+                    break;
+                }
+            }
+            
+        } else {
+            var t:Token = expected;
+            if (t.getIndex() == token.getIndex()) containExpected = true;
+        }
+        
+        if (!containExpected) {
             if (err != null) throw err;
-            throw 'Expected token ${expected.getName()} but received ${token.getName()} at line ${lineNo}';
+            if (Std.isOfType(expected, Array)) {
+                throw 'Expected tokens ${expected} but received ${token.getName()} at line ${lineNo}';
+            }
+
+            if (Std.isOfType(expected, Token)) {
+                throw 'Expected token ${expected.getName()} but received ${token.getName()} at line ${lineNo}';
+            }
+
+            return null;    
         } else {
             return token;
         }

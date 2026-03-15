@@ -60,15 +60,19 @@ class Utils {
 
 	public static function validateKey(key:String) {
 		for (char in key) {
-			if (!Utils.idChar[char])
-				throw 'Unexpected char \'${String.fromCharCode(char)}\' in key: "${key}"!';
+			if (!Utils.idChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in key: "${key}"!';
 		}
 	}
 
-	public static function validateValue(value:String) {
+	public static function validateValue(value:String, key:String) {
 		for (char in value) {
-			if (!Utils.valChar[char] && !isSpecialChar(char))
-				throw 'Unexpected char \'${String.fromCharCode(char)}\' in value: "${value}"!';
+			if (!Utils.valChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
+		}
+	}
+
+	public static function validateSingleQuote(value:String, key:String) {
+		for (char in value) {
+			if (char == "'".code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
 		}
 	}
 

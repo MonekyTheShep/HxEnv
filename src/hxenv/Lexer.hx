@@ -5,6 +5,8 @@ enum Token {
 	Equals; // =
 	Value(value:String); // 𝑥 = 𝑦
 
+	SingleQuote(value:String);
+	DoubleQuote(value:String);
 	Comment(value:String); // #{comment}
 	Newline; // \n
 	Eof; // end of file
@@ -101,7 +103,7 @@ class Lexer {
 
 		advance(); // Consume Ending Quote
 		
-		return Value(stringBuf.toString());
+		return SingleQuote(stringBuf.toString());
 	}
 
 	function readDoubleQuote():Token {
@@ -127,6 +129,8 @@ class Lexer {
 						stringBuf.add('"');
 					case "'".code:
 						stringBuf.add("'");
+					case "$".code:
+						stringBuf.add("$");
 					default:
 						stringBuf.addChar(next);
 					
@@ -144,7 +148,7 @@ class Lexer {
 
 		advance(); // Consume Ending Quote
 		
-		return Value(stringBuf.toString());
+		return DoubleQuote(stringBuf.toString());
 	}
 	
 	function readValue():Token {
@@ -187,7 +191,7 @@ class Lexer {
 	//----------------------------------------------------------------------------------
 	// Helper Functions
 	//----------------------------------------------------------------------------------
-	function invalidChar(char:Int) throw 'Unexpected char \'${String.fromCharCode(char)}\' at line ${lineNo}, col ${col}!';
+	function invalidChar(char:Int) throw 'Unexpected char `${String.fromCharCode(char)}` at line ${lineNo}, col ${col}!';
 
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;

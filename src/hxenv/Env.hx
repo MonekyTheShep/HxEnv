@@ -1,7 +1,7 @@
 package hxenv;
 
 import haxe.iterators.ArrayIterator;
-import hxenv.types.EntryType;
+import hxenv.types.NodeType;
 
 /**
  * Represents a node inside of an **ENV** document tree.
@@ -32,7 +32,7 @@ class Env {
 	 * This value controls how the node behaves within the ENV tree and
 	 * how it is serialized.
 	 */
-	public var nodeType(default, null):Null<EntryType>;
+	public var nodeType(default, null):Null<NodeType>;
 
 	/**
 	 * The name associated with this node.
@@ -62,7 +62,7 @@ class Env {
 	 * @param name Name Currently unused
 	 * @param value Value (Used for key values)
 	 */
-	public function new(type:EntryType, ?name:String, ?value:String):Void {
+	public function new(type:NodeType, ?name:String, ?value:String):Void {
 		this.nodeType = type;
 		this.nodeName = name;
 		this.nodeValue = value;
@@ -84,8 +84,8 @@ class Env {
 	 * @param v The Value.
 	 * @return Env
 	 */
-	public static function createKey(k:String, v:String):Env {
-		return new Env(KeyValue, k, v);
+	public static function createKey(key:String, value:String, variant:KeyValueVariant):Env {
+		return new Env(KeyValue(variant), key, value);
 	}
 
 	@:noCompletion var __disposed:Bool = false;
@@ -163,7 +163,7 @@ class Env {
 	public function get(name:String):Null<String> {
 		if (nodeType == Document) {
 			for (child in children) {
-				if (child != null && child.nodeType == KeyValue && child.nodeName == name) {
+				if (child != null && child.nodeType.getIndex() == KeyValue().getIndex()  && child.nodeName == name) {
 					return child.nodeValue;
 				}
 			}
@@ -175,17 +175,20 @@ class Env {
 	 * Set a Key and Value
 	 * @param name The name of the variable
 	 * @param value The value.
+	 * @param variant (Optional) Used to set the variant of a key.
 	 */
-	public function set(name:String, value:String):Void {
+	public function set(key:String, value:String, ?variant:KeyValueVariant):Void {
 		if (nodeType == Document) {
 			for (child in children) {
-				if (child.nodeType == KeyValue && child.nodeName == name) {
+				if (child.nodeType.getIndex() == KeyValue().getIndex() && child.nodeName == key) {
 					// if it exists overwrite it
 					child.nodeValue = value;
+					if (variant != null) child.nodeType = KeyValue(variant);
 					return;
 				}
 			}
-			addChild(createKey(name, value));
+			if (variant == null) throw 'Variant needed to create new key: ${key}!';
+			addChild(createKey(key, value, variant));
 		}
 	}
 
@@ -227,6 +230,6 @@ class Env {
 	 * @return Array Iterator of KeyValue Nodes
 	**/
 	public function keyValues():Iterator<Env> {
-		return children.filter(child -> child.nodeType == KeyValue).iterator();
+		return children.filter(child -> child.nodeType.getIndex() == KeyValue().getIndex()).iterator();
 	}
 }

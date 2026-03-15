@@ -11,10 +11,22 @@ class Printer {
                 case Comment:
                             stringBuffer.add("#" + child.nodeValue);
 					        stringBuffer.add("\n");
-                case KeyValue:
-                            Utils.validateKey(child.nodeName); //Utils.validateValue(child.nodeValue);
+                case KeyValue(variant):
+                            Utils.validateKey(child.nodeName);
                             stringBuffer.add(child.nodeName + "=");
-					        stringBuffer.add(Utils.normaliseValue(child.nodeValue));
+
+                            switch (variant) {
+                                case Raw:
+                                    Utils.validateValue(child.nodeValue, child.nodeName);
+                                    stringBuffer.add(child.nodeValue);
+                                case DoubleQuote:
+                                    final escaped:String = StringTools.replace(child.nodeValue, '"', '\\"');
+                                    stringBuffer.add('"${escaped}"');
+                                case SingleQuote:
+                                    Utils.validateSingleQuote(child.nodeValue, child.nodeName);
+                                    stringBuffer.add(Utils.normaliseValue(child.nodeValue));
+                            }
+					        
                             stringBuffer.add("\n");
 
                 default:
