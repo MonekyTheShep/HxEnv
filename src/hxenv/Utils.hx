@@ -72,13 +72,15 @@ class Utils {
 
 	public static function validateSingleQuotedValue(value:String, key:String) {
 		for (char in value) {
-			if (char == "'".code || char == '\n'.code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
+			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: "${key}"!';
+			if (char == "'".code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
 		}
 	}
 
 	public static function validateComment(value:String) {
 		for (char in value) {
-			if (char == "\n".code) throw 'Unexpected char `${String.fromCharCode(char)}` in comment: "${value}"!';
+			final normalise:String = StringTools.replace(value, "\n", "\\n");
+			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of comment: "${normalise}"!';
 		}
 	}
 }
