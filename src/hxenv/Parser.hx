@@ -28,8 +28,8 @@ class Parser {
         while (peekToken() != Eof) {
             switch peekToken() {
                 case Key(_):
-                    env.addChild(parseKeyValue());
-
+                    final result = parseKeyValue();
+                    env.set(result.key, result.value, result.variant);
                 case Comment(value):
                     consumeToken();
                     env.addChild(new Env(Comment, null, value));
@@ -52,12 +52,12 @@ class Parser {
         return env;
     }
 
-    function parseKeyValue():Env {
+    function parseKeyValue():{key: String, value: String, variant: KeyValueVariant} {
         var key:String = readKey();
        
         var result = readValue();
 
-        return Env.createKey(key, result.value, result.variant);
+        return {key: key, value: result.value, variant: result.variant};
     }
 
     function readKey():String {
