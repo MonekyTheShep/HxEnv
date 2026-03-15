@@ -152,7 +152,7 @@ class Lexer {
 	function readValue():Token {
 		final start:Int = pos;
 
-		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek()) && !isCommentPrefix(peek())) {
+		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek())) {
 			if(!Utils.valChar[peek()]) invalidChar(peek());
 			advance();
 		}
