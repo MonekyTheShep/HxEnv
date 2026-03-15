@@ -191,7 +191,10 @@ class Lexer {
 	//----------------------------------------------------------------------------------
 	// Helper Functions
 	//----------------------------------------------------------------------------------
-	function invalidChar(char:Int) throw 'Unexpected char `${String.fromCharCode(char)}` at line ${lineNo}, col ${col}!';
+	function invalidChar(char:Int) {
+		if (char == '\n'.code) throw 'Unexpected char `\\n` at line ${lineNo}, col ${col}!';
+		throw 'Unexpected char `${String.fromCharCode(char)}` at line ${lineNo}, col ${col}!';
+	}
 
 	inline function isEof(char:Int):Bool return StringTools.isEof(char);
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
