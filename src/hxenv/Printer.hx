@@ -25,7 +25,7 @@ class Printer {
                             stringBuffer.add('"${escaped}"');
                         case SingleQuote:
                             Utils.validateSingleQuotedValue(child.nodeValue, child.nodeName);
-                            stringBuffer.add("'child.nodeValue'");
+                            stringBuffer.add('\'${child.nodeValue}\'');
                      }
 					        
                     stringBuffer.add("\n");
