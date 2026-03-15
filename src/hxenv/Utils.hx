@@ -27,7 +27,9 @@ class Utils {
 		valChar["/".code] = true;
 		valChar[":".code] = true;
 		valChar["@".code] = true;
+		valChar["#".code] = true;
 		valChar["%".code] = true;
+		valChar["~".code] = true;
 		valChar["+".code] = true;
 		valChar[",".code] = true;
 		valChar["=".code] = true;
