@@ -21,6 +21,7 @@ class Lexer {
 	var lineNo:Int;
 	var col:Int;
 	var state:LexerState;
+	var tokenQueue:Array<Token>;
     public var verboseMode:Bool;
 
     public function new(?verboseMode:Bool) {
@@ -33,15 +34,20 @@ class Lexer {
 		this.lineNo = 1;
 		this.col = 1;
 		this.state = KeyState;
+		this.tokenQueue = [];
 		
-       var result:Array<Token> = [];
-		while (true) {
+       	var result:Array<Token> = [];
+		while (!isEof()) {
+			if (tokenQueue.length > 0) {
+				while (tokenQueue.length > 0) result.push(tokenQueue.shift());
+				continue;
+			}
 			var t = token();
 
 			if (t != null) result.push(t);
-			if (t == Eof) break;
 			
 		}
+		result.push(Eof);
 		return result;
     }
 
@@ -49,29 +55,42 @@ class Lexer {
 		while (true) {
             final char:Int = peek();
 
-            switch (char) {
-				case '\n'.code:
-					advance();
-					lineNo++;
-					col = 1;
-					state = KeyState;
-                    return Newline;
-                case '='.code:
-					if (state == ValueState) return readValue(); // If state is already value state return value
-					advance();
-                    state = ValueState;
-                    return Equals;
-                case '#'.code:
-                    return readComment();
-				case '"'.code:
-					return readDoubleQuote();
-				case "'".code:
-					return readSingleQuote();
-                default: 
-					if (isEof(char)) return Eof;
-					if (state == KeyState) return readKeyIdentifier();
-					if (state == ValueState) return readValue();
-            }
+			if (isEof()) {
+				if (state == ValueState) tokenQueue.push(Value("")); tokenQueue.push(Newline); return null;  // Edge case if no chars are found after equals
+				return null;
+			}
+
+			if (isNewline(char)) {
+				final startState = state;
+				advance();
+				lineNo++;
+				col = 1;
+				state = KeyState;
+				if (startState == ValueState) tokenQueue.push(Value("")); tokenQueue.push(Newline); return null; // Edge case if no chars are found after equals
+                return Newline;
+			}
+
+			if (isEqual(char)) {
+				if (state == ValueState) return readValue(); // If state is already value state return value
+				advance();
+                state = ValueState;
+                return Equals;
+			}
+
+			if (isCommentPrefix(char)) {
+				state = KeyState;
+                return readComment();
+			}
+
+			if (isQuote(char)) {
+				if (char == '"'.code) return readDoubleQuote();
+				if (char == "'".code) return readSingleQuote();
+			}
+
+			if (Utils.idChar[char] && state == KeyState) return readKeyIdentifier();
+			if (Utils.valChar[char] && state == ValueState) return readValue();
+
+			invalidChar(char); // Any char not caught in if statements are invalid.
         }
     }
 	
@@ -79,8 +98,8 @@ class Lexer {
 		final start:Int = pos;
 
 		if (isDigit(peek())) invalidChar(peek()); // First character can't start with digit.
-		while (!isEqual(peek()) && !isNewline(peek()) && !isEof(peek())) {
-			if (!Utils.idChar[peek()]) invalidChar(peek());
+		while (!isEqual(peek()) && !isNewline(peek()) && !isEof()) {
+			if(!Utils.idChar[peek()]) invalidChar(peek());
 			advance();
 		}
 
@@ -92,11 +111,11 @@ class Lexer {
 		final quote = advance(); // Consume Starting Quote
 		var stringBuf:StringBuf = new StringBuf();
 
-		while (!isEof(peek()) && !isNewline(peek()) && peek() != quote) {
+		while (!isEof() && !isNewline(peek()) && peek() != quote) {
 			stringBuf.addChar(advance());
 		}
 
-		if (isEof(peek()) || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
+		if (isEof() || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 		
@@ -108,12 +127,12 @@ class Lexer {
 		final quote = advance(); // Consume Starting Quote
 		var stringBuf:StringBuf = new StringBuf();
 		
-		while (!isEof(peek()) && peek() != quote) {
+		while (!isEof() && peek() != quote) {
 			if (isBackSlash(peek())) {
 				advance(); // Consume Escape Character
 				var next:Int = advance(); // Consume next character after Escape Character
 
-				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+				if (isEof()) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 
 				switch (next) {
 					case 'n'.code:
@@ -141,7 +160,7 @@ class Lexer {
 			}
 		}
 
-		if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+		if (isEof()) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 		
@@ -152,7 +171,7 @@ class Lexer {
 	function readValue():Token {
 		final start:Int = pos;
 
-		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek())) {
+		while (!isNewline(peek()) && !isEof() && !isSpace(peek())) {
 			if(!Utils.valChar[peek()]) invalidChar(peek());
 			advance();
 		}
@@ -160,14 +179,13 @@ class Lexer {
 		var value:String = query.substring(start, pos);
 
 		while (isSpace(peek())) advance(); // Skip white spaces after value
-		if(value.length == 0) return null;
 		return Value(value);
 	}
 
     function readComment():Token {
 		final start:Int = pos + 1;
 
-		while (!isNewline(peek()) && !isEof(peek())) {
+		while (!isNewline(peek()) && !isEof()) {
 			advance();
 		}
 
@@ -192,12 +210,12 @@ class Lexer {
 	//----------------------------------------------------------------------------------
 	function invalidChar(char:Int) throw 'Unexpected char \'${String.fromCharCode(char)}\' at line ${lineNo}, col ${col}!';
 
-	inline function isEof(char:Int):Bool return StringTools.isEof(char);
+	inline function isEof():Bool return pos >= query.length;
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isEqual(char:Int):Bool return char == '='.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
 	inline function isSpace(char:Int):Bool return char == ' '.code;
-	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
+	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code;
 	inline function isBackSlash(char:Int):Bool return char == '\\'.code;
 	
 	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
