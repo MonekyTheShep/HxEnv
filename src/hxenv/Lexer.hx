@@ -1,15 +1,19 @@
 package hxenv;
 
 enum Token {
-	Key(key:String); // 𝑥 = 𝑦
-	Equals; // =
-	RawValue(value:String); // 𝑥 = 𝑦
-	SingleQuoteValue(value:String); // 𝑥 = '𝑦'
-	DoubleQuoteValue(value:String); // 𝑥 = "𝑦"
+	TKey(key:String); // 𝑥 = 𝑦
+	TEquals; // =
+	TValue(?value:String, ?variant:TValueVariant);
 
-	Comment(value:String); // #comment
-	Newline; // \n
-	Eof; // end of file
+	TComment(value:String); // #comment
+	TNewline; // \n
+	TEof; // end of file
+}
+
+enum TValueVariant {
+	TRaw;
+	TDoubleQuote;
+	TSingleQuote;
 }
 
 enum LexerState {
@@ -43,7 +47,7 @@ class Lexer {
 			var t = token();
 
 			if (t != null) result.push(t);
-			if (t == Eof) break;
+			if (t == TEof) break;
 			
 		}
 		return result;
@@ -59,11 +63,11 @@ class Lexer {
 
 			if (isEof(peek())) {
 				if (state == ValueState) { // Value edge case
-						tokenQueue.push(RawValue(""));
+						tokenQueue.push(TValue("",TRaw));
 						state = KeyState;
 						return null;
 				}
-				return Eof;
+				return TEof;
 			} 
 
 
@@ -75,18 +79,18 @@ class Lexer {
 					lineNo++;
 					col = 1;
 					if (state == ValueState) { // Value edge case
-						tokenQueue.push(RawValue(""));
-						tokenQueue.push(Newline);
+						tokenQueue.push(TValue("", TRaw));
+						tokenQueue.push(TNewline);
 						state = KeyState;
 						return null;
 					}
 					state = KeyState;
-                    return Newline;
+                    return TNewline;
                 case '='.code:
 					if (state == ValueState) return readRawValue(); // If state is already value state return value
 					advance();
                     state = ValueState;
-                    return Equals;
+                    return TEquals;
                 case '#'.code:
                     return readComment();
 				case '"'.code:
@@ -111,7 +115,7 @@ class Lexer {
 		}
 
 		var keyIdentifier:String = StringTools.trim(query.substring(start, pos));
-		return Key(keyIdentifier);
+		return TKey(keyIdentifier);
 	}
 
 	function readSingleQuoteValue():Token {
@@ -127,7 +131,7 @@ class Lexer {
 		advance(); // Consume Ending Quote
 
 		state = KeyState;
-		return SingleQuoteValue(stringBuf.toString());
+		return TValue(stringBuf.toString(), TSingleQuote);
 	}
 
 	function readDoubleQuoteValue():Token {
@@ -173,7 +177,7 @@ class Lexer {
 		advance(); // Consume Ending Quote
 		state = KeyState;
 		
-		return DoubleQuoteValue(stringBuf.toString());
+		return TValue(stringBuf.toString(), TDoubleQuote);
 	}
 	
 	function readRawValue():Token {
@@ -188,7 +192,7 @@ class Lexer {
 		
 		state = KeyState;
 		// if(value.length == 0) return null;
-		return RawValue(value);
+		return TValue(value, TRaw);
 	}
 
     function readComment():Token {
@@ -198,7 +202,7 @@ class Lexer {
 			advance();
 		}
 
-		return Comment(query.substring(start, pos));
+		return TComment(query.substring(start, pos));
 	}
 
     inline function advance():Int {
