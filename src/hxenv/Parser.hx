@@ -84,7 +84,7 @@ class Parser {
                 };
                 
                 {value: value, variant: result}; 
-            default: {value: "", variant: Raw};
+            default: throw "What.";
         }
     }
 
