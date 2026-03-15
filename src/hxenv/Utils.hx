@@ -72,7 +72,7 @@ class Utils {
 
 	public static function normaliseValue(value:String) {
 		if (value.length == 0 || value == null)
-			return "";
+			return '""';
 
 		var needQuotes:Bool = false;
 

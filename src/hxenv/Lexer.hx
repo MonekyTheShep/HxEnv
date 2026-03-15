@@ -38,7 +38,7 @@ class Lexer {
 		while (true) {
 			var t = token();
 
-            result.push(t);
+			if (t != null) result.push(t);
 			if (t == Eof) break;
 			
 		}
@@ -160,6 +160,7 @@ class Lexer {
 		var value:String = query.substring(start, pos);
 
 		while (isSpace(peek())) advance(); // Skip white spaces after value
+		if(value.length == 0) return null;
 		return Value(value);
 	}
 
