@@ -1,7 +1,4 @@
-import hxenv.Lexer;
 import hxenv.Env;
-import hxenv.Printer;
-import hxenv.Parser;
 import sys.io.File;
 
 
