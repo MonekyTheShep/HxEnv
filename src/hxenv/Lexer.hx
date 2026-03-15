@@ -54,13 +54,12 @@ class Lexer {
 			if (tokenQueue.length > 0) {
 				return tokenQueue.shift();
 			}
-			
+
 			while (isSpace(peek()) && !isEof(peek())) advance(); // Skip white spaces
 
 			if (isEof(peek())) {
 				if (state == ValueState) { // Value edge case
 						tokenQueue.push(Value(""));
-						tokenQueue.push(Newline);
 						state = KeyState;
 						return null;
 				}
