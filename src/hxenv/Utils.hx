@@ -63,14 +63,14 @@ class Utils {
 	public static function validateKey(key:String):Void {
 		for (char in key) {
 			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: "${normaliseNewLine(key)}"!';
-			if (!Utils.idChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in key: "${key}"!';
+			if (!idChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in key: "${key}"!';
 		}
 	}
 
 	public static function validateRawValue(value:String, key:String):Void {
 		for (char in value) {
 			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: "${key}"!';
-			if (!Utils.valChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
+			if (!valChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
 		}
 	}
 
