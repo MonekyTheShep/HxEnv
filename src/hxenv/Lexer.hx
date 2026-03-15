@@ -4,9 +4,9 @@ enum Token {
 	Key(key:String); // 𝑥 = 𝑦
 	Equals; // =
 	RawValue(value:String); // 𝑥 = 𝑦
+	SingleQuoteValue(value:String); // 𝑥 = '𝑦'
+	DoubleQuoteValue(value:String); // 𝑥 = "𝑦"
 
-	SingleQuoteValue(value:String);
-	DoubleQuoteValue(value:String);
 	Comment(value:String); // #{comment}
 	Newline; // \n
 	Eof; // end of file
