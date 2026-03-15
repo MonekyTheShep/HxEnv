@@ -37,7 +37,7 @@ class Parser {
                 case Equals:
                     throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
 
-                case Value(_):
+                case RawValue(_):
                     throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
 
                 case Newline:
@@ -70,14 +70,14 @@ class Parser {
     function readValue():{value : String, variant : KeyValueVariant} {
         expect(Equals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
         
-        var valueToken = expect([Value(""), SingleQuote(""), DoubleQuote("")], 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
+        var valueToken = expect([RawValue(""), SingleQuoteValue(""), DoubleQuoteValue("")], 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
 
         return switch valueToken {
-            case Value(value):
+            case RawValue(value):
                 {value: value, variant: Raw}; 
-            case SingleQuote(value):
+            case SingleQuoteValue(value):
                 {value: value, variant: SingleQuote}; 
-            case DoubleQuote(value):
+            case DoubleQuoteValue(value):
                 {value: value, variant: DoubleQuote}; 
             default: {value: "", variant: Raw};
         }
