@@ -7,7 +7,7 @@ enum Token {
 	SingleQuoteValue(value:String); // 𝑥 = '𝑦'
 	DoubleQuoteValue(value:String); // 𝑥 = "𝑦"
 
-	Comment(value:String); // #{comment}
+	Comment(value:String); // #comment
 	Newline; // \n
 	Eof; // end of file
 }
