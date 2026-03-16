@@ -64,6 +64,7 @@ class Lexer {
 			if (isEof(peek())) {
 				if (state == ValueState) { // Value edge case
 						tokenQueue.push(TValue("",TRaw));
+						tokenQueue.push(TEof);
 						state = KeyState;
 						return null;
 				}
