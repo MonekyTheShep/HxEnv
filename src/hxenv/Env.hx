@@ -20,9 +20,9 @@ class Env {
 
 	/**
     * Stores the previous node instance that created the child (itself);
-    **/ 
+    **/
 
-	public var parent:Null<Env>;
+	public var parent(default, null):Null<Env>;
 
 	/**
 	 * The type of this node which is read only
@@ -35,21 +35,21 @@ class Env {
 	public var nodeType(default, null):Null<NodeType>;
 
 	/**
-	 * The name associated with this node.
+	 * The name associated with this node which is read only
 	 *
 	 * For `KeyValue` nodes, this is the key name.  
 	 * It is typically `null` for `Document` and `Comment` nodes.
 	 */
-	public var nodeName:Null<String>;
+	public var nodeName(default, null):Null<String>;
 
 	/**
-	 * The value associated with this node.
+	 * The value associated with this node which is read only
 	 *
 	 * Used primarily by `KeyValue` nodes to store the key's value.  
 	 * `Document` node normally does not use this field, and it
 	 * may also be used for comment text depending on the implementation.
 	 */
-	public var nodeValue:Null<String>;
+	public var nodeValue(default, null):Null<String>;
 
 	/**
 	 * This instances children.
@@ -63,6 +63,31 @@ class Env {
 	 * @param value Value (Used for key values)
 	 */
 	public function new(type:NodeType, ?name:String, ?value:String):Void {
+		if(type.getIndex() == KeyValue().getIndex()) {
+			if (name == null || value == null) throw "Name and Value required for KeyValue Node.";
+
+			Utils.validateKey(name);
+
+			switch (type) {
+				case KeyValue(variant):
+					switch (variant) {
+						case Raw:
+							Utils.validateRawValue(value, name);
+						case SingleQuote:
+							Utils.validateSingleQuotedValue(value, name);
+						default:
+					}
+				default:
+			}
+		}
+
+		if(type == Comment) {
+			if (value == null) throw "Value required for Comment Node.";
+
+			Utils.validateComment(value);
+		}
+
+
 		this.nodeType = type;
 		this.nodeName = name;
 		this.nodeValue = value;
@@ -154,7 +179,7 @@ class Env {
 	}
 
 	/**
-	 * Looks up a key within this Document and returns its value.
+	 * Looks up a key within a Document Node and returns its value.
 	 *
 	 * 
 	 * @param name The key name.
@@ -172,8 +197,8 @@ class Env {
 	}
 
 	/**
-	 * Set a Key and Value
-	 * @param name The name of the variable
+	 * Set a Key with a Value within a Document Node
+	 * @param name The name of the Key
 	 * @param value The value.
 	 * @param variant (Optional) Used to set the variant of a key.
 	 */

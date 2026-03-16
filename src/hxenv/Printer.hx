@@ -9,22 +9,18 @@ class Printer {
 		for (child in doc.children) {
             switch (child.nodeType) {
                 case Comment:
-                    Utils.validateComment(child.nodeValue);
                     stringBuffer.add("#" + child.nodeValue);
 					stringBuffer.add("\n");
                 case KeyValue(variant):
-                    Utils.validateKey(child.nodeName);
                     stringBuffer.add(child.nodeName + "=");
 
                     switch (variant) {
                         case Raw:
-                            Utils.validateRawValue(child.nodeValue, child.nodeName);
                             stringBuffer.add(child.nodeValue);
                         case DoubleQuote:
                             final escaped:String = StringTools.replace(child.nodeValue, '"', '\\"');
                             stringBuffer.add('"${escaped}"');
                         case SingleQuote:
-                            Utils.validateSingleQuotedValue(child.nodeValue, child.nodeName);
                             stringBuffer.add('\'${child.nodeValue}\'');
                      }
 					        
