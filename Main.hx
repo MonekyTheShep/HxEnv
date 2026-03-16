@@ -10,6 +10,7 @@ class Main {
 
         trace(env.get("KEY"));
         trace(env.get("KEY2"));
+         trace(env.get("KEY3"));
 
         var out = File.write(Sys.getCwd() + '/testout.env');
         
