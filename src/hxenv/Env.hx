@@ -64,6 +64,7 @@ class Env {
 	 */
 	public function new(type:NodeType, ?name:String, ?value:String):Void {
 		if(type.getIndex() == KeyValue().getIndex()) {
+			if (parent.nodeType != Document) throw "KeyValue Node can only be added to Document Nodes.";
 			if (name == null || value == null) throw "Name and Value required for KeyValue Node.";
 
 			Utils.validateKey(name);
@@ -82,6 +83,7 @@ class Env {
 		}
 
 		if(type == Comment) {
+			if (parent.nodeType != Document) throw "Comment Node can only be added to Document Nodes.";
 			if (value == null) throw "Value required for Comment Node.";
 
 			Utils.validateComment(value);
