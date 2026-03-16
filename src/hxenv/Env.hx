@@ -75,7 +75,7 @@ class Env {
 							Utils.validateRawValue(value, name);
 						case SingleQuote:
 							Utils.validateSingleQuotedValue(value, name);
-						default:
+						default: // Double Quote doesn't need validation due to it storing any character.
 					}
 				default:
 			}
