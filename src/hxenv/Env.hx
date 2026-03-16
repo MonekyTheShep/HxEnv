@@ -35,21 +35,21 @@ class Env {
 	public var nodeType(default, null):Null<NodeType>;
 
 	/**
-	 * The name associated with this node which is read only
+	 * The name associated with this node
 	 *
 	 * For `KeyValue` nodes, this is the key name.  
 	 * It is typically `null` for `Document` and `Comment` nodes.
 	 */
-	public var nodeName(default, null):Null<String>;
+	public var nodeName:Null<String>;
 
 	/**
-	 * The value associated with this node which is read only
+	 * The value associated with this node
 	 *
 	 * Used primarily by `KeyValue` nodes to store the key's value.  
 	 * `Document` node normally does not use this field, and it
 	 * may also be used for comment text depending on the implementation.
 	 */
-	public var nodeValue(default, null):Null<String>;
+	public var nodeValue:Null<String>;
 
 	/**
 	 * This instances children.
@@ -58,7 +58,7 @@ class Env {
 
 	/**
 	 * `hxEnv`'s constructor
-	 * @param type Note Type (Document, Comment, KeyValue)
+	 * @param type Node Type (Document, Comment, KeyValue)
 	 * @param name Name (Used for KeyValue)
 	 * @param value Value (Used for KeyValue, Comment)
 	 */
