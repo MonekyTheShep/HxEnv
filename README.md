@@ -41,7 +41,7 @@ catch (e:Dynamic) {
 
 var env = new Env();
 
-env.set("Key", "Value");
+env.set("Key", "Value", DoubleQuote);
 env.addComment("Comment");
 env.get("Key"); // Value
 
