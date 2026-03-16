@@ -59,8 +59,8 @@ class Env {
 	/**
 	 * `hxEnv`'s constructor
 	 * @param type Note Type (Document, Comment, KeyValue)
-	 * @param name Name Currently unused
-	 * @param value Value (Used for key values)
+	 * @param name Name (Used for KeyValue)
+	 * @param value Value (Used for KeyValue, Comment)
 	 */
 	public function new(type:NodeType, ?name:String, ?value:String):Void {
 		if(type.getIndex() == KeyValue().getIndex()) {
