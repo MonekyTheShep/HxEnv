@@ -11,9 +11,9 @@ enum Token {
 }
 
 enum TValueVariant {
-	TRaw;
-	TDoubleQuote;
-	TSingleQuote;
+	TRaw;  // 𝑥 = 𝑦
+	TDoubleQuote;  // 𝑥 = "𝑦"
+	TSingleQuote; // 𝑥 = '𝑦'
 }
 
 enum LexerState {
