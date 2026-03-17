@@ -163,7 +163,7 @@ class Env {
 	public function get(name:String):Null<String> {
 		if (nodeType == Document) {
 			for (child in children) {
-				if (child != null && child.nodeType.getIndex() == KeyValue().getIndex()  && child.nodeName == name) {
+				if (child != null && child.nodeType.getIndex() == KeyValue(null).getIndex()  && child.nodeName == name) {
 					return child.nodeValue;
 				}
 			}
@@ -180,7 +180,7 @@ class Env {
 	public function set(key:String, value:String, ?variant:KeyValueVariant):Void {
 		if (nodeType == Document) {
 			for (child in children) {
-				if (child.nodeType.getIndex() == KeyValue().getIndex() && child.nodeName == key) {
+				if (child.nodeType.getIndex() == KeyValue(null).getIndex() && child.nodeName == key) {
 					// if it exists overwrite it
 					child.nodeValue = value;
 					if (variant != null) child.nodeType = KeyValue(variant);
@@ -230,6 +230,6 @@ class Env {
 	 * @return Array Iterator of KeyValue Nodes
 	**/
 	public function keyValues():Iterator<Env> {
-		return children.filter(child -> child.nodeType.getIndex() == KeyValue().getIndex()).iterator();
+		return children.filter(child -> child.nodeType.getIndex() == KeyValue(null).getIndex()).iterator();
 	}
 }
