@@ -13,7 +13,7 @@ class Printer {
                     stringBuffer.add("#" + child.nodeValue);
 					stringBuffer.add("\n");
                 case KeyValue(variant):
-                    if (variant == null) throw 'Variant required in key: ${child.nodeName}. Unable to serialize.';
+                    if (variant == null) throw 'Variant required in key: `${child.nodeName}`. Unable to serialize.';
                     Utils.validateKey(child.nodeName);
                     stringBuffer.add(child.nodeName + "=");
 
