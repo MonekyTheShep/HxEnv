@@ -64,19 +64,18 @@ class Lexer {
 				return TEof;
 			} 
 
-
             final char:Int = peek();
 
             switch (char) {
 				case '\n'.code:
+					final startState = state;
 					advance();
 					lineNo++;
 					col = 1;
-					if (state == ValueState) { // Value edge case
-						state = KeyState;
+					state = KeyState;
+					if (startState == ValueState) { // Value edge case
 						return pushMultiToken([TValue("", TRaw), TNewline]);
 					}
-					state = KeyState;
                     return TNewline;
                 case '='.code:
 					if (state == ValueState) return readRawValue(); // If state is already value state return value
