@@ -28,11 +28,8 @@ class Lexer {
 	var col:Int;
 	var state:LexerState;
 	var tokenQueue:Array<Token>;
-    public var verboseMode:Bool;
 
-    public function new(?verboseMode:Bool) {
-		this.verboseMode = false;
-	}
+    public function new() {}
 
     public function lex(query:String):Array<Token> {
         this.query = StringTools.replace(query, "\r\n", "\n");
