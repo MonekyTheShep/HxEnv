@@ -78,7 +78,7 @@ class Lexer {
 					}
                     return TNewline;
                 case '='.code:
-					if (state == ValueState) return readRawValue(); // If state is already value state return value
+					if (state == ValueState) return readRawValue();
 					advance();
                     state = ValueState;
                     return TEquals;
