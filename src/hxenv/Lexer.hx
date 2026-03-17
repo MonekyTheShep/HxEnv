@@ -60,10 +60,7 @@ class Lexer {
 			while (isSpace(peek()) && !isEof(peek())) advance(); // Skip white spaces
 
 			if (isEof(peek())) {
-				if (state == ValueState) { // Value edge case
-						state = KeyState;
-						return pushMultiToken([TValue("", TRaw), TEof]);
-				}
+				if (state == ValueState) return pushMultiToken([TValue("", TRaw), TEof]);
 				return TEof;
 			} 
 
