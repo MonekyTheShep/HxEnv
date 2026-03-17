@@ -17,6 +17,7 @@ enum TValueVariant {
 }
 
 enum LexerState {
+	DefaultState;
 	KeyState;
 	ValueState;
 }
@@ -60,10 +61,8 @@ class Lexer {
 
 			if (isEof(peek())) {
 				if (state == ValueState) { // Value edge case
-						tokenQueue.push(TValue("",TRaw));
-						tokenQueue.push(TEof);
 						state = KeyState;
-						return null;
+						return pushMultiToken([TValue("", TRaw), TNewline]);
 				}
 				return TEof;
 			} 
@@ -77,10 +76,8 @@ class Lexer {
 					lineNo++;
 					col = 1;
 					if (state == ValueState) { // Value edge case
-						tokenQueue.push(TValue("", TRaw));
-						tokenQueue.push(TNewline);
 						state = KeyState;
-						return null;
+						return pushMultiToken([TValue("", TRaw), TNewline]);
 					}
 					state = KeyState;
                     return TNewline;
@@ -96,7 +93,6 @@ class Lexer {
 				case "'".code:
 					return readSingleQuoteValue();
                 default: 
-					
 					if (state == KeyState) return readKeyIdentifier();
 					if (state == ValueState) return readRawValue();
             }
@@ -124,11 +120,11 @@ class Lexer {
 			stringBuf.addChar(advance());
 		}
 
-		if (isEof(peek()) || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
+		if (isEof(peek()) || peek() != quote || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 
-		state = KeyState;
+		state = DefaultState;
 		return TValue(stringBuf.toString(), TSingleQuote);
 	}
 
@@ -170,11 +166,12 @@ class Lexer {
 			}
 		}
 
-		if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+
+		if (isEof(peek()) || peek() != quote) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
-		state = KeyState;
-		
+
+		state = DefaultState;
 		return TValue(stringBuf.toString(), TDoubleQuote);
 	}
 	
@@ -188,8 +185,7 @@ class Lexer {
 
 		var value:String = query.substring(start, pos);
 		
-		state = KeyState;
-		// if(value.length == 0) return null;
+		state = DefaultState;
 		return TValue(value, TRaw);
 	}
 
@@ -212,9 +208,17 @@ class Lexer {
         return StringTools.fastCodeAt(query, pos);
     }	
 	
-	inline function peekNext():Int {
-        return StringTools.fastCodeAt(query, pos + 1);
+	inline function peekBy(by:Int):Int {
+        return StringTools.fastCodeAt(query, pos + by);
     }	
+
+	function pushMultiToken(tokens:Array<Token>):Token {
+		for (token in tokens) {
+			tokenQueue.push(token);
+		}
+
+		return null;
+	}
 
 	//----------------------------------------------------------------------------------
 	// Helper Functions
