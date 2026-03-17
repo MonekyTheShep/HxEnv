@@ -54,7 +54,7 @@ class Env {
 	/**
 	 * This instances children.
 	 */
-	public var children:Array<Env>;
+	public var children:Null<Array<Env>>;
 
 	/**
 	 * `hxEnv`'s constructor
