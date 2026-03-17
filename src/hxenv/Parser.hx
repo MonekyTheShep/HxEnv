@@ -70,7 +70,7 @@ class Parser {
     function readValue():{value : String, variant : KeyValueVariant} {
         expect(TEquals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
         
-        var valueToken = expect(TValue(), 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
+        var valueToken = expect(TValue(null,  null), 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
 
         return switch valueToken {
             case TValue(value, variant):

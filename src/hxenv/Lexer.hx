@@ -3,7 +3,7 @@ package hxenv;
 enum Token {
 	TKey(key:String); // 𝑥 = 𝑦
 	TEquals; // =
-	TValue(?value:String, ?variant:TValueVariant);
+	TValue(value:String, variant:TValueVariant);
 
 	TComment(value:String); // #comment
 	TNewline; // \n
