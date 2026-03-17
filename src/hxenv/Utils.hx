@@ -62,7 +62,7 @@ class Utils {
 
 	public static function validateKey(key:String):Void {
 		for (char in key) {
-			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: "${normaliseNewLine(key)}"!';
+			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: `${normaliseNewLine(key)}`!';
 			if (!idChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in key: "${key}"!';
 		}
 	}
@@ -70,20 +70,20 @@ class Utils {
 	public static function validateRawValue(value:String, key:String):Void {
 		for (char in value) {
 			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: "${key}"!';
-			if (!valChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
+			if (!valChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: `${key}`!';
 		}
 	}
 
 	public static function validateSingleQuotedValue(value:String, key:String):Void {
 		for (char in value) {
 			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: "${key}"!';
-			if (char == "'".code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: "${key}"!';
+			if (char == "'".code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: `${key}`!';
 		}
 	}
 
 	public static function validateComment(value:String):Void {
 		for (char in value) {
-			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of comment: "${normaliseNewLine(value)}"!';
+			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of comment: `${normaliseNewLine(value)}`!';
 		}
 	}
 }
