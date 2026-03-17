@@ -69,14 +69,14 @@ class Utils {
 
 	public static function validateRawValue(value:String, key:String):Void {
 		for (char in value) {
-			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: "${key}"!';
+			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: `${key}`!';
 			if (!valChar[char]) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: `${key}`!';
 		}
 	}
 
 	public static function validateSingleQuotedValue(value:String, key:String):Void {
 		for (char in value) {
-			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: "${key}"!';
+			if(char == '\n'.code) throw 'Unexpected char `\\n` in value of key: `${key}`!';
 			if (char == "'".code) throw 'Unexpected char `${String.fromCharCode(char)}` in value of key: `${key}`!';
 		}
 	}
