@@ -4,7 +4,7 @@ package hxenv.types;
 enum NodeType {
    Document;
    Comment;
-   KeyValue(?variant:KeyValueVariant);
+   KeyValue(variant:KeyValueVariant);
 }
 
 enum KeyValueVariant {
