@@ -91,7 +91,7 @@ class Lexer {
                 default: 
 					if (state == KeyState) return readKeyIdentifier();
 					if (state == ValueState) return readRawValue();
-					if (state == DefaultState) advance(); // Skips
+					if (state == DefaultState) invalidChar(char); // Characters during default state are invalid.
             }
         }
     }
