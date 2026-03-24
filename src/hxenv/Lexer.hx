@@ -32,43 +32,45 @@ class Lexer {
 	var state:LexerState;
 	var tokenQueue:Array<Token>;
 
-    public function new() {}
+	public function new() {}
 
-    public function lex(query:String):Array<Token> {
-        this.query = StringTools.replace(query, "\r\n", "\n");
+	public function lex(query:String):Array<Token> {
+		this.query = StringTools.replace(query, "\r\n", "\n");
 		this.pos = 0;
 		this.lineNo = 1;
 		this.col = 1;
 		this.state = KeyState;
 		this.tokenQueue = new Array<Token>();
-		
-       var result:Array<Token> = [];
+
+		var result:Array<Token> = [];
 		while (true) {
 			var t = token();
 
-			if (t != null) result.push(t);
-			if (t == TEof) break;
-			
+			if (t != null)
+				result.push(t);
+			if (t == TEof)
+				break;
 		}
 		return result;
-    }
+	}
 
-    function token():Token {
+	function token():Token {
 		while (true) {
 			if (tokenQueue.length > 0) {
 				return tokenQueue.shift();
 			}
 
-			while (isSpace(peek()) && !isEof(peek())) advance(); // Skip white spaces
+			while (isSpace(peek()) && !isEof(peek()))
+				advance(); // Skip white spaces
 
 			if (isEof(peek())) {
 				if (state == ValueState) return pushMultiToken([TRawValue(""), TEof]);
 				return TEof;
-			} 
+			}
 
-            final char:Int = peek();
+			final char:Int = peek();
 
-            switch (char) {
+			switch (char) {
 				case '\n'.code:
 					final startState = state;
 					advance();
@@ -78,26 +80,27 @@ class Lexer {
 					if (startState == ValueState) { // Value edge case
 						return pushMultiToken([TRawValue(""), TNewline]);
 					}
-                    return TNewline;
-                case '='.code:
-					if (state == ValueState) return readRawValue();
+					return TNewline;
+				case '='.code:
+					if (state == ValueState)
+						return readRawValue();
 					advance();
-                    state = ValueState;
-                    return TEquals;
-                case '#'.code:
-                    return readComment();
+					state = ValueState;
+					return TEquals;
+				case '#'.code:
+					return readComment();
 				case '"'.code:
 					return readDoubleQuoteValue();
 				case "'".code:
 					return readSingleQuoteValue();
-                default: 
+				default:
 					if (state == KeyState) return readKeyIdentifier();
 					if (state == ValueState) return readRawValue();
 					if (state == DefaultState) invalidChar(char); // Characters during default state are invalid.
-            }
-        }
-    }
-	
+			}
+		}
+	}
+
 	function readKeyIdentifier():Token {
 		final start:Int = pos;
 
@@ -119,7 +122,7 @@ class Lexer {
 			stringBuf.addChar(advance());
 		}
 
-		if (isEof(peek()) || peek() != quote || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
+		if (isEof(peek()) || peek() != quote || isNewline(peek()))throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 
@@ -127,15 +130,58 @@ class Lexer {
 		return TSingleQuote(stringBuf.toString());
 	}
 
+	function readCurlyBraces():TInterpolated {
+		advance(); // Consume Starting Brace.
+
+		var identifierBuf:StringBuf = new StringBuf();
+
+		while (!isEof(peek()) && !isNewline(peek())) {
+			if (peek() == '}'.code)
+				break;
+			identifierBuf.addChar(peek());
+			advance();
+		}
+		if (isEof(peek()) || isNewline(peek()) || peek() != '}'.code) throw 'Unclosed {} braces at at line ${lineNo}, col ${col}!';
+
+		advance(); // Consume Ending Brace.
+
+		if (identifierBuf.length > 0) {
+			return TIdentifier(identifierBuf.toString());
+		} else {
+			return null;
+		}
+	}
+
+	function readIdentifier():TInterpolated {
+
+
+		var identifierBuf:StringBuf = new StringBuf();
+
+		while (!isEof(peek()) && !isNewline(peek())) {
+			if (!Utils.idChar[peek()])
+				break;
+			identifierBuf.addChar(peek());
+			advance();
+		}
+
+		if (identifierBuf.length > 0) {
+			return TIdentifier(identifierBuf.toString());
+		} else {
+			return null;
+		}
+	}
+	
+
 	function readDoubleQuoteValue():Token {
 		final quote = advance(); // Consume Starting Quote
 		var interpolated:Array<TInterpolated> = new Array<TInterpolated>();
 		var stringBuf:StringBuf = new StringBuf();
-		
+
 		while (!isEof(peek()) && peek() != quote) {
 			if (isBackSlash(peek())) {
 				advance(); // Consume Escape Character
-				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+				if (isEof(peek()))
+					throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 				var next:Int = advance(); // Consume next character after Escape Character
 
 				switch (next) {
@@ -155,53 +201,36 @@ class Lexer {
 						stringBuf.add("$");
 					default:
 						stringBuf.addChar(next);
-					
 				}
 			} else if (isInterpolatedPrefix(peek())) {
 				if (stringBuf.length > 0) {
 					interpolated.push(TString(stringBuf.toString()));
 					stringBuf = new StringBuf();
 				}
+
 				advance(); // Consume Interpolated Prefix
+
 				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
-				var inCurlyBraces:Bool = false;
 
-				if(peek() == '{'.code) {
-					inCurlyBraces = true;
-					advance(); // Consume Starting Brace.
-				}
-
-				var identifierBuf:StringBuf = new StringBuf();
-				
-				while (!isEof(peek()) && !isNewline(peek())) {
-					if (inCurlyBraces) {
-						if (peek() == '}'.code) break;
-						identifierBuf.addChar(peek());
-						advance();
-					} else {
-						if (!Utils.idChar[peek()]) break;
-						identifierBuf.addChar(peek());
-						advance();
+				var identifierToken:TInterpolated;
+				if (peek() == '{'.code) {
+					identifierToken = readCurlyBraces();
+				} else {
+					if (!Utils.idChar[peek()] || isDigit(peek())) { // Identifiers can't start with digit
+						interpolated.push(TString('$'));
+						stringBuf = new StringBuf();
+						continue;
 					}
+
+					identifierToken = readIdentifier();
 				}
 
-				if (inCurlyBraces) {
-					if (isEof(peek()) || isNewline(peek()) || peek() != '}'.code) {
-						throw 'Unclosed {} braces at at line ${lineNo}, col ${col}!';
-					}
-				}
-
-				if (inCurlyBraces) {
-					advance(); // Consume Ending Brace.
-				}
-
-				if (identifierBuf.length > 0) interpolated.push(TIdentifier(identifierBuf.toString()));
-			}
-			else {
+				if (identifierToken != null) interpolated.push(identifierToken);
+			} else {
 				if (isNewline(peek())) {
 					lineNo++;
 					col = 1;
-				} 
+				}
 				stringBuf.addChar(advance());
 			}
 		}
@@ -218,20 +247,21 @@ class Lexer {
 		state = DefaultState;
 		return TDoubleQuote(interpolated);
 	}
-	
+
 	function readRawValue():Token {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek())) {
-			if(!Utils.valChar[peek()]) invalidChar(peek());
+			if (!Utils.valChar[peek()])
+				invalidChar(peek());
 			advance();
 		}
-		
+
 		state = DefaultState;
 		return TRawValue(query.substring(start, pos));
 	}
 
-    function readComment():Token {
+	function readComment():Token {
 		final start:Int = pos + 1;
 
 		while (!isNewline(peek()) && !isEof(peek())) {
@@ -241,18 +271,18 @@ class Lexer {
 		return TComment(query.substring(start, pos));
 	}
 
-    inline function advance():Int {
+	inline function advance():Int {
 		col++;
 		return StringTools.fastCodeAt(query, pos++);
 	}
 
-    inline function peek():Int {
-        return StringTools.fastCodeAt(query, pos);
-    }	
-	
+	inline function peek():Int {
+		return StringTools.fastCodeAt(query, pos);
+	}
+
 	inline function peekBy(by:Int):Int {
-        return StringTools.fastCodeAt(query, pos + by);
-    }	
+		return StringTools.fastCodeAt(query, pos + by);
+	}
 
 	function pushMultiToken(tokens:Array<Token>):Token {
 		for (token in tokens) {
@@ -266,21 +296,41 @@ class Lexer {
 	// Helper Functions
 	//----------------------------------------------------------------------------------
 	function invalidChar(char:Int) {
-		if (char == '\n'.code) throw 'Unexpected char `\\n` at line ${lineNo}, col ${col}!';
+		if (char == '\n'.code)
+			throw 'Unexpected char `\\n` at line ${lineNo}, col ${col}!';
 		throw 'Unexpected char `${String.fromCharCode(char)}` at line ${lineNo}, col ${col}!';
 	}
 
-	inline function isEof(char:Int):Bool return StringTools.isEof(char);
-	inline function isNewline(char:Int):Bool return char == '\n'.code;
-	inline function isEqual(char:Int):Bool return char == '='.code;
-	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
-	inline function isInterpolatedPrefix(char:Int):Bool return char == '$'.code;
-	inline function isSpace(char:Int):Bool return char == ' '.code || char == '\t'.code;
-	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
-	inline function isBackSlash(char:Int):Bool return char == '\\'.code;
-	
-	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
-	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
-	inline function isAlphaNumeric(c:Int):Bool return isAlpha(c) || isDigit(c);
-	
+	inline function isEof(char:Int):Bool
+		return StringTools.isEof(char);
+
+	inline function isNewline(char:Int):Bool
+		return char == '\n'.code;
+
+	inline function isEqual(char:Int):Bool
+		return char == '='.code;
+
+	inline function isCommentPrefix(char:Int):Bool
+		return char == '#'.code;
+
+	inline function isInterpolatedPrefix(char:Int):Bool
+		return char == '$'.code;
+
+	inline function isSpace(char:Int):Bool
+		return char == ' '.code || char == '\t'.code;
+
+	inline function isQuote(char:Int):Bool
+		return char == "'".code || char == '"'.code || char == '`'.code;
+
+	inline function isBackSlash(char:Int):Bool
+		return char == '\\'.code;
+
+	inline function isDigit(c:Int):Bool
+		return c >= '0'.code && c <= '9'.code;
+
+	inline function isAlpha(c:Int):Bool
+		return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
+
+	inline function isAlphaNumeric(c:Int):Bool
+		return isAlpha(c) || isDigit(c);
 }
