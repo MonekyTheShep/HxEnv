@@ -1,5 +1,7 @@
 package hxenv;
 
+using StringTools;
+
 enum Token {
 	TKey(key:String); // 𝑥 = 𝑦
 	TEquals; // =
@@ -135,13 +137,12 @@ class Lexer {
 
 		var identifierBuf:StringBuf = new StringBuf();
 
-		while (!isEof(peek()) && !isNewline(peek())) {
-			if (peek() == '}'.code)
-				break;
-			if (!Utils.idChar[peek()]) invalidChar(peek());
+		while (!isEof(peek()) && !isNewline(peek()) && peek() != '}'.code) {
+			if (!Utils.idChar[peek()] && peek() != '"'.code) invalidChar(peek());
 			identifierBuf.addChar(peek());
 			advance();
 		}
+
 		if (isEof(peek()) || isNewline(peek()) || peek() != '}'.code) throw 'Unclosed {} braces at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Brace.
