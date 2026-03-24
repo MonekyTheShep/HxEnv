@@ -44,7 +44,7 @@ class Parser {
                     consumeToken();
                     env.addChild(new Env(Comment, null, value));
                 case TEquals:
-                    throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
+                    throw 'Unexpected EQUALS! Expected KEY before EQUALS at line ${lineNo}';
                 case TRawValue(_) | TSingleQuote(_) | TDoubleQuote(_) :
                     throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
                 case TNewline:
