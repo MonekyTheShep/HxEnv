@@ -4,10 +4,23 @@ import hxenv.types.NodeType.KeyValueVariant;
 import haxe.extern.EitherType;
 import hxenv.Lexer.Token;
 
+
+typedef PValue = {
+    var value:String;
+    var variant:KeyValueVariant;
+}
+
+typedef PKeyValue = {
+    var key:String;
+    var value:String;
+    var variant:KeyValueVariant;
+}
+
 class Parser {
     var tokens:Array<Token>;
     var pos:Int;
     var lineNo:Int;
+    var env:Env;
     
     public function new() {}
 
@@ -21,41 +34,39 @@ class Parser {
         this.pos = 0;
         this.lineNo = 1;
         this.tokens = args;
+        this.env = Env.createDocument();
         trace(tokens);
-
-        var env:Env = Env.createDocument();
 
         while (peekToken() != TEof) {
             switch peekToken() {
                 case TKey(_):
-                    final result = parseKeyValue();
+                    final result:PKeyValue = parseKeyValue();
                     env.set(result.key, result.value, result.variant);
                 case TComment(value):
                     consumeToken();
                     env.addChild(new Env(Comment, null, value));
-            
-                case TEquals:
-                    throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
+                // case TEquals:
+                //     throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
 
-                case TValue(_):
-                    throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
+                // case TValue(_):
+                //     throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
 
                 case TNewline:
                     lineNo++;
                     consumeToken();
 
                 default:
-                    consumeToken();
+                    throw 'Unexpected TOKEN at line ${lineNo}';
             }
         }
 
         return env;
     }
 
-    function parseKeyValue():{key: String, value: String, variant: KeyValueVariant} {
+    function parseKeyValue():PKeyValue {
         var key:String = readKey();
        
-        var result = readValue();
+        var result:PValue = readValue();
 
         return {key: key, value: result.value, variant: result.variant};
     }
@@ -67,24 +78,29 @@ class Parser {
         };
     }
 
-    function readValue():{value : String, variant : KeyValueVariant} {
+    function readValue():PValue {
         expect(TEquals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
         
-        var valueToken = expect(TValue(null,  null), 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
+        var valueToken = expect([TRawValue(null), TSingleQuote(null), TDoubleQuote(null)], 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
 
         return switch valueToken {
-            case TValue(value, variant):
-                var result = switch (variant) {
-                    case TRaw:
-                        Raw;
-                    case TDoubleQuote:
-                        DoubleQuote;
-                    case TSingleQuote:
-                        SingleQuote;
-                };
-                
-                {value: value, variant: result}; 
-            default: throw 'Expected VALUE after EQUALS at line ${lineNo}'; // It shouldn't reach this but ill just add it.
+            case TRawValue(value):
+                {value: value, variant: Raw};
+            case TSingleQuote(value):
+                {value: value, variant: SingleQuote};
+            case TDoubleQuote(values):
+                var stringBuf:StringBuf = new StringBuf();
+                for (value in values) {
+                    switch value {
+                        case TIdentifier(name):
+                            stringBuf.add(env.get(name));
+                        case TString(value):
+                            stringBuf.add(value);
+                    }
+                }
+                {value: stringBuf.toString(), variant: DoubleQuote};
+            default:
+                throw "";
         }
     }
 
