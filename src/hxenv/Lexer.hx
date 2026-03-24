@@ -122,7 +122,7 @@ class Lexer {
 			stringBuf.addChar(advance());
 		}
 
-		if (isEof(peek()) || peek() != quote || isNewline(peek()))throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
+		if (isEof(peek()) || peek() != quote || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 
@@ -138,6 +138,7 @@ class Lexer {
 		while (!isEof(peek()) && !isNewline(peek())) {
 			if (peek() == '}'.code)
 				break;
+			if (!Utils.idChar[peek()]) invalidChar(peek());
 			identifierBuf.addChar(peek());
 			advance();
 		}
@@ -153,8 +154,6 @@ class Lexer {
 	}
 
 	function readIdentifier():TInterpolated {
-
-
 		var identifierBuf:StringBuf = new StringBuf();
 
 		while (!isEof(peek()) && !isNewline(peek())) {
@@ -180,8 +179,7 @@ class Lexer {
 		while (!isEof(peek()) && peek() != quote) {
 			if (isBackSlash(peek())) {
 				advance(); // Consume Escape Character
-				if (isEof(peek()))
-					throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 				var next:Int = advance(); // Consume next character after Escape Character
 
 				switch (next) {
@@ -252,8 +250,7 @@ class Lexer {
 		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek()) && !isSpace(peek())) {
-			if (!Utils.valChar[peek()])
-				invalidChar(peek());
+			if (!Utils.valChar[peek()]) invalidChar(peek());
 			advance();
 		}
 
@@ -296,41 +293,20 @@ class Lexer {
 	// Helper Functions
 	//----------------------------------------------------------------------------------
 	function invalidChar(char:Int) {
-		if (char == '\n'.code)
-			throw 'Unexpected char `\\n` at line ${lineNo}, col ${col}!';
+		if (char == '\n'.code) throw 'Unexpected char `\\n` at line ${lineNo}, col ${col}!';
 		throw 'Unexpected char `${String.fromCharCode(char)}` at line ${lineNo}, col ${col}!';
 	}
 
-	inline function isEof(char:Int):Bool
-		return StringTools.isEof(char);
+	inline function isEof(char:Int):Bool return StringTools.isEof(char);
+	inline function isNewline(char:Int):Bool return char == '\n'.code;
+	inline function isEqual(char:Int):Bool return char == '='.code;
+	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
+	inline function isInterpolatedPrefix(char:Int):Bool return char == '$'.code;
+	inline function isSpace(char:Int):Bool return char == ' '.code || char == '\t'.code;
+	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
+	inline function isBackSlash(char:Int):Bool return char == '\\'.code;
 
-	inline function isNewline(char:Int):Bool
-		return char == '\n'.code;
-
-	inline function isEqual(char:Int):Bool
-		return char == '='.code;
-
-	inline function isCommentPrefix(char:Int):Bool
-		return char == '#'.code;
-
-	inline function isInterpolatedPrefix(char:Int):Bool
-		return char == '$'.code;
-
-	inline function isSpace(char:Int):Bool
-		return char == ' '.code || char == '\t'.code;
-
-	inline function isQuote(char:Int):Bool
-		return char == "'".code || char == '"'.code || char == '`'.code;
-
-	inline function isBackSlash(char:Int):Bool
-		return char == '\\'.code;
-
-	inline function isDigit(c:Int):Bool
-		return c >= '0'.code && c <= '9'.code;
-
-	inline function isAlpha(c:Int):Bool
-		return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
-
-	inline function isAlphaNumeric(c:Int):Bool
-		return isAlpha(c) || isDigit(c);
+	inline function isDigit(c:Int):Bool return c >= '0'.code && c <= '9'.code;
+	inline function isAlpha(c:Int):Bool return (c >= 'a'.code && c <= 'z'.code) || (c >= 'A'.code && c <= 'Z'.code);
+	inline function isAlphaNumeric(c:Int):Bool return isAlpha(c) || isDigit(c);
 }
