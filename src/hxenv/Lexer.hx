@@ -3,17 +3,19 @@ package hxenv;
 enum Token {
 	TKey(key:String); // 𝑥 = 𝑦
 	TEquals; // =
-	TValue(value:String, variant:TValueVariant);
+
+	TRawValue(value:String); // 𝑥 = 𝑦
+	TSingleQuote(value:String); // x = '𝑦'
+	TDoubleQuote(values:Array<TInterpolated>); // 𝑥 = "𝑦"
 
 	TComment(value:String); // #comment
 	TNewline; // \n
 	TEof; // end of file
 }
 
-enum TValueVariant {
-	TRaw;  // 𝑥 = 𝑦
-	TDoubleQuote;  // 𝑥 = "𝑦"
-	TSingleQuote; // 𝑥 = '𝑦'
+enum TInterpolated {
+	TIdentifier(name:String);
+	TString(value:String);
 }
 
 enum LexerState {
@@ -60,7 +62,7 @@ class Lexer {
 			while (isSpace(peek()) && !isEof(peek())) advance(); // Skip white spaces
 
 			if (isEof(peek())) {
-				if (state == ValueState) return pushMultiToken([TValue("", TRaw), TEof]);
+				if (state == ValueState) return pushMultiToken([TRawValue(""), TEof]);
 				return TEof;
 			} 
 
@@ -74,7 +76,7 @@ class Lexer {
 					col = 1;
 					state = KeyState;
 					if (startState == ValueState) { // Value edge case
-						return pushMultiToken([TValue("", TRaw), TNewline]);
+						return pushMultiToken([TRawValue(""), TNewline]);
 					}
                     return TNewline;
                 case '='.code:
@@ -122,11 +124,12 @@ class Lexer {
 		advance(); // Consume Ending Quote
 
 		state = DefaultState;
-		return TValue(stringBuf.toString(), TSingleQuote);
+		return TSingleQuote(stringBuf.toString());
 	}
 
 	function readDoubleQuoteValue():Token {
 		final quote = advance(); // Consume Starting Quote
+		var interpolated:Array<TInterpolated> = new Array<TInterpolated>();
 		var stringBuf:StringBuf = new StringBuf();
 		
 		while (!isEof(peek()) && peek() != quote) {
@@ -154,7 +157,48 @@ class Lexer {
 						stringBuf.addChar(next);
 					
 				}
-			} else {
+			} else if (isInterpolatedPrefix(peek())) {
+				if (stringBuf.length > 0) {
+					interpolated.push(TString(stringBuf.toString()));
+					stringBuf = new StringBuf();
+				}
+				advance(); // Consume Interpolated Prefix
+				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+				var inCurlyBraces:Bool = false;
+
+				if(peek() == '{'.code) {
+					inCurlyBraces = true;
+					advance(); // Consume Starting Brace.
+				}
+
+				var identifierBuf:StringBuf = new StringBuf();
+				
+				while (!isEof(peek()) && !isNewline(peek())) {
+					if (inCurlyBraces) {
+						if (peek() == '}'.code) break;
+						trace(String.fromCharCode(peek()));
+						identifierBuf.addChar(peek());
+						advance();
+					} else {
+						if (!Utils.idChar[peek()]) break;
+						identifierBuf.addChar(peek());
+						advance();
+					}
+				}
+
+				if (inCurlyBraces) {
+					if (isEof(peek()) || isNewline(peek()) || peek() != '}'.code) {
+						throw 'Unclosed {} braces at at line ${lineNo}, col ${col}!';
+					}
+				}
+
+				if (inCurlyBraces) {
+					advance(); // Consume Ending Brace.
+				}
+
+				if (identifierBuf.length > 0) interpolated.push(TIdentifier(identifierBuf.toString()));
+			}
+			else {
 				if (isNewline(peek())) {
 					lineNo++;
 					col = 1;
@@ -163,13 +207,17 @@ class Lexer {
 			}
 		}
 
+		if (stringBuf.length > 0) {
+			interpolated.push(TString(stringBuf.toString()));
+			stringBuf = new StringBuf();
+		}
 
 		if (isEof(peek()) || peek() != quote) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 
 		state = DefaultState;
-		return TValue(stringBuf.toString(), TDoubleQuote);
+		return TDoubleQuote(interpolated);
 	}
 	
 	function readRawValue():Token {
@@ -179,11 +227,9 @@ class Lexer {
 			if(!Utils.valChar[peek()]) invalidChar(peek());
 			advance();
 		}
-
-		var value:String = query.substring(start, pos);
 		
 		state = DefaultState;
-		return TValue(value, TRaw);
+		return TRawValue(query.substring(start, pos));
 	}
 
     function readComment():Token {
@@ -229,6 +275,7 @@ class Lexer {
 	inline function isNewline(char:Int):Bool return char == '\n'.code;
 	inline function isEqual(char:Int):Bool return char == '='.code;
 	inline function isCommentPrefix(char:Int):Bool return char == '#'.code;
+	inline function isInterpolatedPrefix(char:Int):Bool return char == '$'.code;
 	inline function isSpace(char:Int):Bool return char == ' '.code || char == '\t'.code;
 	inline function isQuote(char:Int):Bool return char == "'".code || char == '"'.code || char == '`'.code;
 	inline function isBackSlash(char:Int):Bool return char == '\\'.code;
