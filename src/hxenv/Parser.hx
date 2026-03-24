@@ -93,7 +93,8 @@ class Parser {
                 for (value in values) {
                     switch value {
                         case TIdentifier(name):
-                            stringBuf.add(env.get(name));
+                            var value:Null<String> = env.get(name);
+                            if (value != null) stringBuf.add(value);
                         case TString(value):
                             stringBuf.add(value);
                     }
