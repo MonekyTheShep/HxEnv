@@ -154,7 +154,7 @@ class Lexer {
 		}
 	}
 
-	function readIdentifier():TInterpolated {
+	function readInterpolatedIdentifier():TInterpolated {
 		var identifierBuf:StringBuf = new StringBuf();
 
 		while (!isEof(peek()) && !isNewline(peek())) {
@@ -221,7 +221,7 @@ class Lexer {
 						continue;
 					}
 
-					identifierToken = readIdentifier();
+					identifierToken = readInterpolatedIdentifier();
 				}
 
 				if (identifierToken != null) interpolated.push(identifierToken);
