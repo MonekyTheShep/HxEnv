@@ -176,7 +176,6 @@ class Lexer {
 				while (!isEof(peek()) && !isNewline(peek())) {
 					if (inCurlyBraces) {
 						if (peek() == '}'.code) break;
-						trace(String.fromCharCode(peek()));
 						identifierBuf.addChar(peek());
 						advance();
 					} else {
