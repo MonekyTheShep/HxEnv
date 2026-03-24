@@ -5,12 +5,12 @@ import haxe.extern.EitherType;
 import hxenv.Lexer.Token;
 
 
-typedef PValue = {
+typedef PValueVariant = {
     var value:String;
     var variant:KeyValueVariant;
 }
 
-typedef PKeyValue = {
+typedef PKeyValueVariant = {
     var key:String;
     var value:String;
     var variant:KeyValueVariant;
@@ -38,7 +38,7 @@ class Parser {
         while (peekToken() != TEof) {
             switch peekToken() {
                 case TKey(_):
-                    final result:PKeyValue = parseKeyValue();
+                    final result:PKeyValueVariant = parseKeyValue();
                     env.set(result.key, result.value, result.variant);
                 case TComment(value):
                     consumeToken();
@@ -58,10 +58,10 @@ class Parser {
         return env;
     }
 
-    function parseKeyValue():PKeyValue {
+    function parseKeyValue():PKeyValueVariant {
         var key:String = readKey();
        
-        var result:PValue = readValue();
+        var result:PValueVariant = readValue();
 
         return {key: key, value: result.value, variant: result.variant};
     }
@@ -73,7 +73,7 @@ class Parser {
         };
     }
 
-    function readValue():PValue {
+    function readValue():PValueVariant {
         expect(TEquals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
         
         var valueToken = expect([TRawValue(null), TSingleQuote(null), TDoubleQuote(null)], 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
