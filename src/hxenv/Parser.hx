@@ -29,13 +29,11 @@ class Parser {
 		return parse(lexer.lex(string));
 	}
 
-    public function parse(args:Array<Token>):Env
-    {
+    public function parse(args:Array<Token>):Env {
         this.pos = 0;
         this.lineNo = 1;
         this.tokens = args;
         this.env = Env.createDocument();
-        trace(tokens);
 
         while (peekToken() != TEof) {
             switch peekToken() {
@@ -45,16 +43,13 @@ class Parser {
                 case TComment(value):
                     consumeToken();
                     env.addChild(new Env(Comment, null, value));
-                // case TEquals:
-                //     throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
-
-                // case TValue(_):
-                //     throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
-
+                case TEquals:
+                    throw 'Unexpected equals! Expected KEY before EQUALS at line ${lineNo}';
+                case TRawValue(_) | TSingleQuote(_) | TDoubleQuote(_) :
+                    throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
                 case TNewline:
                     lineNo++;
                     consumeToken();
-
                 default:
                     throw 'Unexpected TOKEN at line ${lineNo}';
             }
