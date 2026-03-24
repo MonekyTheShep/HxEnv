@@ -112,8 +112,7 @@ class Lexer {
 			advance();
 		}
 
-		var keyIdentifier:String = StringTools.trim(query.substring(start, pos));
-		return TKey(keyIdentifier);
+		return TKey(query.substring(start, pos));
 	}
 
 	function readSingleQuoteValue():Token {
