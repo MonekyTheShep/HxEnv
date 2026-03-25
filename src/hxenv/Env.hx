@@ -177,7 +177,7 @@ class Env {
 	 *
 	 * 
 	 * @param name The key name.
-	 * @return The value string, or `null` if the key does not exist.
+	 * @return Boolean resolving if it exists.
 	 */
 	public function exists(key:String):Bool {
 		if (nodeType == Document) {
