@@ -160,15 +160,34 @@ class Env {
 	 * @param name The key name.
 	 * @return The value string, or `null` if the key does not exist.
 	 */
-	public function get(name:String):Null<String> {
+	public function get(key:String):Null<String> {
 		if (nodeType == Document) {
 			for (child in children) {
-				if (child != null && child.nodeType.getIndex() == KeyValue(null).getIndex()  && child.nodeName == name) {
+				if (child != null && child.nodeType.getIndex() == KeyValue(null).getIndex()  && child.nodeName == key) {
 					return child.nodeValue;
 				}
 			}
 		}
 		return null;
+	}
+
+
+	/**
+	 * Looks up a key within a Document Node and returns a boolean resolving if it exists.
+	 *
+	 * 
+	 * @param name The key name.
+	 * @return The value string, or `null` if the key does not exist.
+	 */
+	public function exists(key:String):Bool {
+		if (nodeType == Document) {
+			for (child in children) {
+				if (child != null && child.nodeType.getIndex() == KeyValue(null).getIndex()  && child.nodeName == key) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
