@@ -96,7 +96,7 @@ class Parser {
                 }
                 {value: stringBuf.toString(), variant: DoubleQuote};
             default:
-                throw "";
+                throw 'Expected VALUE after EQUALS at line ${lineNo}';
         }
     }
 
