@@ -8,11 +8,11 @@ class Main {
 
         var env:Env = Env.fromString(content);
 
-        trace(env.get("KEY"));
-        trace(env.get("KEY2"));
-        trace(env.get("KEY3"));
+        trace("KEY: " + env.get("KEY"));
+        trace("KEY2: " + env.get("KEY2"));
+        trace("KEY3: " + env.get("KEY3"));
 
-        var out = File.write(Sys.getCwd() + '/testout.env');
+        var out = File.write("testout.env");
         
         try {
             out.writeString(env.toString());

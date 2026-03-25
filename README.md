@@ -22,7 +22,7 @@ trace(env.get("KEY"));
 
 var string:String = env.toString();
 
-var out = File.write(Sys.getCwd() + '/exampleout.env');
+var out = File.write("testout.env");
         
 try {
     out.writeString(string);
@@ -47,7 +47,7 @@ env.get("Key"); // Value
 
 var string:String = env.toString(); // output serialised env
 
-var out = File.write(Sys.getCwd() + '/exampleout.env');
+var out = File.write("testout.env");
         
 try {
     out.writeString(string);
