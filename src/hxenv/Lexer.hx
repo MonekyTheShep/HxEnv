@@ -53,6 +53,7 @@ class Lexer {
 			if (t == TEof)
 				break;
 		}
+		trace(result);
 		return result;
 	}
 
@@ -260,6 +261,7 @@ class Lexer {
 
 	function readComment():Token {
 		final start:Int = pos + 1;
+		advance(); // Consume Comment Prefix
 
 		while (!isNewline(peek()) && !isEof(peek())) {
 			advance();
