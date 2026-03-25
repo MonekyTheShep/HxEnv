@@ -158,8 +158,7 @@ class Lexer {
 		var identifierBuf:StringBuf = new StringBuf();
 
 		while (!isEof(peek()) && !isNewline(peek())) {
-			if (!Utils.idChar[peek()])
-				break;
+			if (!Utils.idChar[peek()]) break;
 			identifierBuf.addChar(peek());
 			advance();
 		}
