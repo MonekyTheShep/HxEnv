@@ -260,8 +260,8 @@ class Lexer {
 	}
 
 	function readComment():Token {
-		final start:Int = pos + 1;
 		advance(); // Consume Comment Prefix
+		final start:Int = pos;
 
 		while (!isNewline(peek()) && !isEof(peek())) {
 			advance();
