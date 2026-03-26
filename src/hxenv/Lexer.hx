@@ -139,8 +139,7 @@ class Lexer {
 
 		while (!isEof(peek()) && !isNewline(peek()) && peek() != '}'.code) {
 			if (!Utils.idChar[peek()] && peek() != '"'.code) invalidChar(peek());
-			identifierBuf.addChar(peek());
-			advance();
+			identifierBuf.addChar(advance());
 		}
 
 		if (isEof(peek()) || isNewline(peek()) || peek() != '}'.code) throw 'Unclosed {} braces at at line ${lineNo}, col ${col}!';
@@ -159,8 +158,7 @@ class Lexer {
 
 		while (!isEof(peek()) && !isNewline(peek())) {
 			if (!Utils.idChar[peek()]) break;
-			identifierBuf.addChar(peek());
-			advance();
+			identifierBuf.addChar(advance());
 		}
 
 		if (identifierBuf.length > 0) {
