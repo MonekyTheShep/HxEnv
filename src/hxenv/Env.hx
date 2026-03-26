@@ -54,7 +54,7 @@ class Env {
 	/**
 	 * This instances children.
 	 */
-	public var children:Null<Array<Env>>;
+	public var children:Null<List<Env>>;
 
 	/**
 	 * `hxEnv`'s constructor
@@ -66,7 +66,7 @@ class Env {
 		this.nodeType = type;
 		this.nodeName = name;
 		this.nodeValue = value;
-		this.children = new Array<Env>();
+		this.children = new List<Env>();
         this.__disposed = false;
 	}
 
@@ -133,7 +133,7 @@ class Env {
 			x.parent.removeChild(x);
 		}
 
-		children.push(x);
+		children.add(x);
 		x.parent = this;
 		return x;
 	}
