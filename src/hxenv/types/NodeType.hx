@@ -1,6 +1,6 @@
 package hxenv.types;
 
-// Root -> Document -> Array of NodeTypes
+// Root -> Document -> List of NodeTypes
 enum NodeType {
    Document;
    Comment;
