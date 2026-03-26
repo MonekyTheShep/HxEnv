@@ -138,7 +138,7 @@ class Lexer {
 		var identifierBuf:StringBuf = new StringBuf();
 
 		while (!isEof(peek()) && !isNewline(peek()) && peek() != '}'.code) {
-			if (!Utils.idChar[peek()] && peek() != '"'.code) invalidChar(peek());
+			if (!Utils.idChar[peek()]) invalidChar(peek());
 			identifierBuf.addChar(advance());
 		}
 
