@@ -37,7 +37,7 @@ class Lexer {
 	public function new() {}
 
 	public function lex(query:String):Array<Token> {
-		this.query = StringTools.replace(query, "\r\n", "\n");
+		this.query = query.replace("\r\n", "\n").replace("\r", "\n"); // Normalise Windows carriage return to Unix new line
 		this.pos = 0;
 		this.lineNo = 1;
 		this.col = 1;
