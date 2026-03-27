@@ -124,7 +124,7 @@ class Lexer {
 			stringBuf.addChar(advance());
 		}
 
-		if (isEof(peek()) || peek() != quote || isNewline(peek())) throw 'Unclosed \' quotes at at line ${lineNo}, col ${col}!';
+		if (isEof(peek()) || peek() != quote || isNewline(peek())) throw 'Unclosed \' quotes at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 
@@ -142,7 +142,7 @@ class Lexer {
 			identifierBuf.addChar(advance());
 		}
 
-		if (isEof(peek()) || isNewline(peek()) || peek() != '}'.code) throw 'Unclosed {} braces at at line ${lineNo}, col ${col}!';
+		if (isEof(peek()) || isNewline(peek()) || peek() != '}'.code) throw 'Unclosed {} braces at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Brace.
 
@@ -177,7 +177,7 @@ class Lexer {
 		while (!isEof(peek()) && peek() != quote) {
 			if (isBackSlash(peek())) {
 				advance(); // Consume Escape Character
-				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+				if (isEof(peek())) throw 'Unclosed \" quotes at line ${lineNo}, col ${col}!';
 				var next:Int = advance(); // Consume next character after Escape Character
 
 				switch (next) {
@@ -206,7 +206,7 @@ class Lexer {
 
 				advance(); // Consume Interpolated Prefix
 
-				if (isEof(peek())) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+				if (isEof(peek())) throw 'Unclosed \" quotes at line ${lineNo}, col ${col}!';
 
 				var identifierToken:TInterpolated;
 				if (peek() == '{'.code) {
@@ -236,7 +236,7 @@ class Lexer {
 			stringBuf = new StringBuf();
 		}
 
-		if (isEof(peek()) || peek() != quote) throw 'Unclosed \" quotes at at line ${lineNo}, col ${col}!';
+		if (isEof(peek()) || peek() != quote) throw 'Unclosed \" quotes at line ${lineNo}, col ${col}!';
 
 		advance(); // Consume Ending Quote
 

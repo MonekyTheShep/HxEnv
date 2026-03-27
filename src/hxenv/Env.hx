@@ -1,6 +1,5 @@
 package hxenv;
 
-import haxe.iterators.ArrayIterator;
 import hxenv.types.NodeType;
 
 /**
