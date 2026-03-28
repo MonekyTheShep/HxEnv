@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["lexer", "parser"],
   "description": "This library will allow parsing of .ENV files",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "classPath": "src",
-  "releasenote": "Take the lib name",
+  "releasenote": "Initial Release",
   "contributors": ["MonekyTheShep"]
 }

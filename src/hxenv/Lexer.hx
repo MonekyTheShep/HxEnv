@@ -53,7 +53,6 @@ class Lexer {
 			if (t == TEof)
 				break;
 		}
-		trace(result);
 		return result;
 	}
 
