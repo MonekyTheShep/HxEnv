@@ -20,7 +20,7 @@ MULTI LINE SUPPORT"
 KEY=VALUE
 ```
 
-## Example Usage Parse and Access
+## Modify or Access Existing Env Files
 ```haxe
 var content:String = File.getContent("example.env");
 var parser:Parser = new Parser();
@@ -46,7 +46,7 @@ catch (e:Dynamic) {
 ```
 
 
-## Create Env File
+## Create Env Files
 ```haxe
 
 var env = new Env();
