@@ -15,12 +15,10 @@ MULTI LINE SUPPORT"
 ```
 
 
-## TODO
-
+## "example.env" File
 ```
-Check for Edge cases
+KEY=VALUE
 ```
-
 
 ## Example Usage Parse and Access
 ```haxe
@@ -30,11 +28,11 @@ var parser:Parser = new Parser();
 var env:Env = parser.parseString(content);
 
 // returns the value of a key
-trace(env.get("KEY"));
+trace(env.get("KEY")); // VALUE
 
 var string:String = env.toString();
 
-var out = File.write("testout.env");
+var out = File.write("exampleout.env");
         
 try {
     out.writeString(string);
@@ -53,13 +51,13 @@ catch (e:Dynamic) {
 
 var env = new Env();
 
-env.set("Key", "Value", DoubleQuote);
+env.set("KEY", "VALUE", DoubleQuote);
 env.addComment("Comment");
-env.get("Key"); // Value
+env.get("KEY"); // VALUE
 
 var string:String = env.toString(); // output serialised env
 
-var out = File.write("testout.env");
+var out = File.write("exampleout.env");
         
 try {
     out.writeString(string);
