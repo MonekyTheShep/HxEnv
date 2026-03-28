@@ -1,6 +1,18 @@
 # HxEnv
 
-The beginning of a ENV file Parser
+.ENV File Parser which supports multi line and variable interpolation.
+
+## Variable Interpolation using ${}
+```
+KEY=VALUE
+KEY2=${KEY}
+```
+
+## Multi Line using Double Quotes.
+```
+KEY="THIS IS
+MULTI LINE SUPPORT"
+```
 
 
 ## TODO
