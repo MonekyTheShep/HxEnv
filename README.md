@@ -5,7 +5,7 @@
 ## Variable Interpolation using ${}
 ```
 KEY=VALUE
-KEY2=${KEY}
+KEY2="${KEY}"
 ```
 
 ## Multi Line using Double Quotes.
