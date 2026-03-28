@@ -2,6 +2,9 @@
 
 .ENV File Parser which supports multi line and variable interpolation.
 
+Single Quote - String Literal with no Variable Interpolation
+Double Quote - Variable Interpolation and Multi Line
+
 ## Variable Interpolation using ${}
 ```
 KEY=VALUE
