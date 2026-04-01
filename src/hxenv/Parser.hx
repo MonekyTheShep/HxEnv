@@ -25,8 +25,7 @@ class Parser {
     public function new() {}
 
     public function parseString(string:String):Env {
-        var lexer:Lexer = new Lexer();
-		return parse(lexer.lex(string));
+		return parse(new Lexer().lex(string));
 	}
 
     public function parse(args:Array<Token>):Env {
