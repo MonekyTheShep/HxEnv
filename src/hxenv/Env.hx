@@ -231,8 +231,7 @@ class Env {
 	 * @return Env instance
 	 */
 	public static function fromString(string:String):Env {
-		var parser:Parser = new Parser();
-		return parser.parseString(string);
+		return new Parser().parseString(string);
 	}
 
 	/**
