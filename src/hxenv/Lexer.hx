@@ -145,11 +145,7 @@ class Lexer {
 
 		advance(); // Consume Ending Brace.
 
-		if (identifierBuf.length > 0) {
-			return TIdentifier(identifierBuf.toString());
-		} else {
-			return null;
-		}
+		return (identifierBuf.length > 0) ? TIdentifier(identifierBuf.toString()) : null;
 	}
 
 	function readInterpolatedIdentifier():TInterpolated {
@@ -160,11 +156,7 @@ class Lexer {
 			identifierBuf.addChar(advance());
 		}
 
-		if (identifierBuf.length > 0) {
-			return TIdentifier(identifierBuf.toString());
-		} else {
-			return null;
-		}
+		return (identifierBuf.length > 0) ? TIdentifier(identifierBuf.toString()) : null;
 	}
 	
 
