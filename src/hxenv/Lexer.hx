@@ -66,8 +66,7 @@ class Lexer {
 				advance(); // Skip white spaces
 
 			if (isEof(peek())) {
-				if (state == ValueState) return pushMultiToken([TRawValue(""), TEof]);
-				return TEof;
+				return (state == ValueState) ? pushMultiToken([TRawValue(""), TEof]) : TEof;
 			}
 
 			final char:Int = peek();
@@ -79,10 +78,7 @@ class Lexer {
 					lineNo++;
 					col = 1;
 					state = KeyState;
-					if (startState == ValueState) { // Value edge case
-						return pushMultiToken([TRawValue(""), TNewline]);
-					}
-					return TNewline;
+					return (startState == ValueState) ? pushMultiToken([TRawValue(""), TNewline]) : TNewline;
 				case '='.code:
 					if (state == ValueState)
 						return readRawValue();
