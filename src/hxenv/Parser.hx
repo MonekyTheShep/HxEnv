@@ -1,0 +1,153 @@
+package hxenv;
+
+import hxenv.types.NodeType.KeyValueVariant;
+import haxe.extern.EitherType;
+import hxenv.Lexer.Token;
+
+
+typedef PValueVariant = {
+    var value:String;
+    var variant:KeyValueVariant;
+}
+
+typedef PKeyValueVariant = {
+    var key:String;
+    var value:String;
+    var variant:KeyValueVariant;
+}
+
+class Parser {
+    var tokens:Array<Token>;
+    var pos:Int;
+    var lineNo:Int;
+    var env:Env;
+    
+    public function new() {}
+
+    public function parseString(string:String):Env {
+		return parse(new Lexer().lex(string));
+	}
+
+    public function parse(args:Array<Token>):Env {
+        this.pos = 0;
+        this.lineNo = 1;
+        this.tokens = args;
+        this.env = Env.createDocument();
+
+        trace(tokens);
+
+        while (peekToken() != TEof) {
+            switch peekToken() {
+                case TKey(_):
+                    final result:PKeyValueVariant = parseKeyValue();
+                    env.set(result.key, result.value, result.variant);
+                case TComment(value):
+                    consumeToken();
+                    env.addChild(new Env(Comment, null, value));
+                case TEquals:
+                    throw 'Unexpected EQUALS! Expected KEY before EQUALS at line ${lineNo}';
+                case TRawValue(_) | TSingleQuote(_) | TDoubleQuote(_) :
+                    throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
+                case TNewline:
+                    lineNo++;
+                    consumeToken();
+                default:
+                    throw 'Unexpected TOKEN at line ${lineNo}';
+            }
+        }
+
+        return env;
+    }
+
+    function parseKeyValue():PKeyValueVariant {
+        var key:String = readKey();
+       
+        var result:PValueVariant = readValue();
+
+        if (peekToken() != TNewline && peekToken() != TEof)
+        {
+            throw 'Expected NEWLINE or EOF after KEY and VALUE at line ${lineNo}';
+        }
+
+        return {key: key, value: result.value, variant: result.variant};
+    }
+
+    function readKey():String {
+        return switch consumeToken() { // Consume Key
+            case TKey(key): key;
+            default: "";
+        };
+    }
+
+    function readValue():PValueVariant {
+        expect(TEquals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
+        
+        var valueToken = expect([TRawValue(null), TSingleQuote(null), TDoubleQuote(null)], 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
+
+        return switch valueToken {
+            case TRawValue(value):
+                {value: value, variant: Raw};
+            case TSingleQuote(value):
+                {value: value, variant: SingleQuote};
+            case TDoubleQuote(values):
+                var stringBuf:StringBuf = new StringBuf();
+                for (value in values) {
+                    switch value {
+                        case TIdentifier(name):
+                            var value:Null<String> = env.get(name);
+                            if (value != null) stringBuf.add(value);
+                        case TString(value):
+                            stringBuf.add(value);
+                    }
+                }
+                {value: stringBuf.toString(), variant: DoubleQuote};
+            default:
+                throw 'Expected VALUE after EQUALS at line ${lineNo}';
+        }
+    }
+
+    inline function peekToken():Token {
+        return tokens[pos];
+    }
+
+    inline function consumeToken():Token {
+        return tokens[pos++];
+    }
+
+    /**
+        Checks if token meets the expected token by comparing the enum index while consuming token.
+    **/
+    function expect(expected:EitherType<Token, Array<Token>>, ?err:String):Token {
+		final token:Token = consumeToken();
+
+        var containExpected:Bool = false;
+        if (Std.isOfType(expected, Array)) {
+            var tokens:Array<Token> = expected;
+            for (t in tokens) {
+                if (t.getIndex() == token.getIndex()) {
+                    containExpected = true;
+                    break;
+                }
+            }
+            
+        } else {
+            var t:Token = expected;
+            if (t.getIndex() == token.getIndex()) containExpected = true;
+        }
+        
+        if (!containExpected) {
+            if (err != null) throw '$err at line ${lineNo}';
+            if (Std.isOfType(expected, Array)) {
+                throw 'Expected tokens ${expected} but received ${token.getName()} at line ${lineNo}';
+            }
+
+            if (Std.isOfType(expected, Token)) {
+                throw 'Expected token ${expected.getName()} but received ${token.getName()} at line ${lineNo}';
+            }
+
+            return null;    
+        } else {
+            return token;
+        }
+	}
+}
