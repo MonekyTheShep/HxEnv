@@ -162,7 +162,7 @@ class Env {
 	public function get(key:String):Null<String> {
 		if (nodeType == Document) {
 			for (child in children) {
-				if (child != null && child.nodeType.getIndex() == KeyValue(null).getIndex()  && child.nodeName == key) {
+				if (child != null && child.nodeType.match(KeyValue(_)) && child.nodeName == key) {
 					return child.nodeValue;
 				}
 			}
@@ -181,7 +181,7 @@ class Env {
 	public function exists(key:String):Bool {
 		if (nodeType == Document) {
 			for (child in children) {
-				if (child != null && child.nodeType.getIndex() == KeyValue(null).getIndex()  && child.nodeName == key) {
+				if (child != null && child.nodeType.match(KeyValue(_)) && child.nodeName == key) {
 					return true;
 				}
 			}
@@ -198,7 +198,7 @@ class Env {
 	public function set(key:String, value:String, ?variant:KeyValueVariant):Void {
 		if (nodeType == Document) {
 			for (child in children) {
-				if (child.nodeType.getIndex() == KeyValue(null).getIndex() && child.nodeName == key) {
+				if (child.nodeType.match(KeyValue(_)) && child.nodeName == key) {
 					// if it exists overwrite it
 					child.nodeValue = value;
 					if (variant != null) child.nodeType = KeyValue(variant);
@@ -239,7 +239,7 @@ class Env {
 	 * @return Iterator of Comment Nodes.
 	**/
 	public function comments():Iterator<Env> {
-		return children.filter(child -> child.nodeType == Comment).iterator();
+		return children.filter(child -> child.nodeType.match(Comment)).iterator();
 	}
 
 	/**
@@ -247,6 +247,6 @@ class Env {
 	 * @return Iterator of KeyValue Nodes
 	**/
 	public function keyValues():Iterator<Env> {
-		return children.filter(child -> child.nodeType.getIndex() == KeyValue(null).getIndex()).iterator();
+		return children.filter(child -> child.nodeType.match(KeyValue(_))).iterator();
 	}
 }
