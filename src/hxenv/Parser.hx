@@ -30,6 +30,8 @@ class Parser {
         switch peek() {
             case TIdentifier(_):
                 parseKey(section);
+            case TNewline:
+                advance();
             default:
                 throw "Unexpected symbol!";
         }
@@ -109,7 +111,7 @@ class Parser {
     function check(token:Token):Bool {
         return peek() == token;
     }
-    
+
     function expect(expected:Token, ?err:String) {
 		if (!check(expected)) {
             throw "Expected token!";
