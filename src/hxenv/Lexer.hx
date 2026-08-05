@@ -66,7 +66,8 @@ class Lexer {
 				tokenQueue.push(readValue(peek()));
 				continue;
 			} else if (currentChar == '#'.code) {
-				return readComment();
+				readComment(); // Temporary not returned
+				continue;
 			} else if (currentChar == '"'.code || currentChar == "'".code) {
 				return readValue(currentChar);
 			}
