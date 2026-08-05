@@ -1,153 +1,120 @@
 package hxenv;
 
-import hxenv.types.NodeType.KeyValueVariant;
-import haxe.extern.EitherType;
 import hxenv.Lexer.Token;
 
-
-typedef PValueVariant = {
-    var value:String;
-    var variant:KeyValueVariant;
-}
-
-typedef PKeyValueVariant = {
-    var key:String;
-    var value:String;
-    var variant:KeyValueVariant;
-}
-
 class Parser {
-    var tokens:Array<Token>;
-    var pos:Int;
-    var lineNo:Int;
-    var env:Env;
-    
-    public function new() {}
+    var lexer:Lexer;
 
-    public function parseString(string:String):Env {
-		return parse(new Lexer().lex(string));
-	}
+    var previousToken:Token;
+    var currentToken:Token;
 
-    public function parse(args:Array<Token>):Env {
-        this.pos = 0;
-        this.lineNo = 1;
-        this.tokens = args;
-        this.env = Env.createDocument();
+    public function new(query:String) {
+        this.lexer = new Lexer(query);
+        advance();
+    }
 
-        trace(tokens);
+    public function parse():Dynamic {
+        return parseSection();
+    }
 
-        while (peekToken() != TEof) {
-            switch peekToken() {
-                case TKey(_):
-                    final result:PKeyValueVariant = parseKeyValue();
-                    env.set(result.key, result.value, result.variant);
-                case TComment(value):
-                    consumeToken();
-                    env.addChild(new Env(Comment, null, value));
-                case TEquals:
-                    throw 'Unexpected EQUALS! Expected KEY before EQUALS at line ${lineNo}';
-                case TRawValue(_) | TSingleQuote(_) | TDoubleQuote(_) :
-                    throw 'Unexpected VALUE! Expected KEY and EQUALS before VALUE at line ${lineNo}';
-                case TNewline:
-                    lineNo++;
-                    consumeToken();
-                default:
-                    throw 'Unexpected TOKEN at line ${lineNo}';
-            }
+    function parseSection():Dynamic {
+        var section:Dynamic = {};
+
+        while (peek() != TEof) {
+            parseStatement(section);
         }
-
-        return env;
+        return section;
     }
 
-    function parseKeyValue():PKeyValueVariant {
-        var key:String = readKey();
-       
-        var result:PValueVariant = readValue();
-
-        if (peekToken() != TNewline && peekToken() != TEof)
-        {
-            throw 'Expected NEWLINE or EOF after KEY and VALUE at line ${lineNo}';
-        }
-
-        return {key: key, value: result.value, variant: result.variant};
-    }
-
-    function readKey():String {
-        return switch consumeToken() { // Consume Key
-            case TKey(key): key;
-            default: "";
-        };
-    }
-
-    function readValue():PValueVariant {
-        expect(TEquals, 'Expected EQUALS sign after KEY at line ${lineNo}'); // Consume Equals
-        
-        var valueToken = expect([TRawValue(null), TSingleQuote(null), TDoubleQuote(null)], 'Expected VALUE after EQUALS at line ${lineNo}'); // Consume Value
-
-        return switch valueToken {
-            case TRawValue(value):
-                {value: value, variant: Raw};
-            case TSingleQuote(value):
-                {value: value, variant: SingleQuote};
-            case TDoubleQuote(values):
-                var stringBuf:StringBuf = new StringBuf();
-                for (value in values) {
-                    switch value {
-                        case TIdentifier(name):
-                            var value:Null<String> = env.get(name);
-                            if (value != null) stringBuf.add(value);
-                        case TString(value):
-                            stringBuf.add(value);
-                    }
-                }
-                {value: stringBuf.toString(), variant: DoubleQuote};
+    function parseStatement(section:Dynamic) {
+        switch peek() {
+            case TIdentifier(_):
+                parseKey(section);
             default:
-                throw 'Expected VALUE after EQUALS at line ${lineNo}';
+                throw "Unexpected symbol!";
         }
     }
 
-    inline function peekToken():Token {
-        return tokens[pos];
+    function parseKey(section:Dynamic) {
+        var key:String = expectIdentifier();
+        expect(TEquals);
+        var value:String = expectValue();
+        expectTerminator();
+
+        Reflect.setField(section, key, value);
     }
 
-    inline function consumeToken():Token {
-        return tokens[pos++];
+    inline function peek():Token {
+        return currentToken;
     }
 
-    /**
-        Checks if token meets the expected token by comparing the enum index while consuming token.
-    **/
-    function expect(expected:EitherType<Token, Array<Token>>, ?err:String):Token {
-		final token:Token = consumeToken();
+    inline function previous():Token {
+        return previousToken;
+    }
 
-        var containExpected:Bool = false;
-        if (Std.isOfType(expected, Array)) {
-            var tokens:Array<Token> = expected;
-            for (t in tokens) {
-                if (t.getIndex() == token.getIndex()) {
-                    containExpected = true;
-                    break;
-                }
-            }
-            
-        } else {
-            var t:Token = expected;
-            if (t.getIndex() == token.getIndex()) containExpected = true;
+    inline function advance():Token {
+        previousToken = currentToken;
+        currentToken = lexer.token();
+
+        switch (currentToken)
+        {
+            case TError(err):
+                throw err;
+            default:
         }
-        
-        if (!containExpected) {
-            if (err != null) throw '$err at line ${lineNo}';
-            if (Std.isOfType(expected, Array)) {
-                throw 'Expected tokens ${expected} but received ${token.getName()} at line ${lineNo}';
-            }
 
-            if (Std.isOfType(expected, Token)) {
-                throw 'Expected token ${expected.getName()} but received ${token.getName()} at line ${lineNo}';
-            }
-
-            return null;    
-        } else {
-            return token;
+        while (currentToken.match(TComment(_))) {
+            currentToken = lexer.token();
         }
+
+        return currentToken;
+    }
+
+    function expectIdentifier():String {
+        switch (peek())
+        {
+            case TIdentifier(val):
+                advance();
+                return val;
+            default:
+                throw "Expected identifier!";
+        }
+
+    }
+
+    function expectValue():String {
+        switch (peek())
+        {
+            case TString(val):
+                advance();
+                return val;
+            default:
+                throw "Expected value!";
+        }
+
+    }
+
+    function expectTerminator() {
+        switch (peek())
+        {
+            case TNewline:
+                advance();
+            case TEof:
+                return;
+            default:
+                throw "Expected key value terminator!";
+        }
+    }
+
+    function check(token:Token):Bool {
+        return peek() == token;
+    }
+    
+    function expect(expected:Token, ?err:String) {
+		if (!check(expected)) {
+            throw "Expected token!";
+        }
+
+        advance();
 	}
 }
