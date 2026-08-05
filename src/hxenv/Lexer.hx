@@ -63,7 +63,7 @@ class Lexer {
 			} else if (currentChar == '='.code) {
 				advance(); // Consume Equal
 				tokenQueue.push(TEquals);
-				tokenQueue.push(readValue(currentChar));
+				tokenQueue.push(readValue(peek()));
 				continue;
 			} else if (currentChar == '#'.code) {
 				return readComment();
