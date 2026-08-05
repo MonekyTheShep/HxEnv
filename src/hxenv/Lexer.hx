@@ -120,7 +120,7 @@ class Lexer {
 	function readInterpolated(stringBuf:StringBuf) {
 		if (isBackSlash(peek())) {
 			advance();
-			if (isEof(peek())) return;
+			if (isEof(peek()) || isNewline(peek())) return;
 			var escaped:Int = advance(); 
 			switch (escaped) {
 				case 'n'.code:
