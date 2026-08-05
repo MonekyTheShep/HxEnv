@@ -89,6 +89,7 @@ class Lexer {
 	function readIdentifier():Token {
 		final start:Int = pos;
 
+		if (isDigit(peek())) return TError(invalidChar(peek()));
 		while (!isNewline(peek()) && !isEof(peek()) && !isEqual(peek())) {
 			if (!Utils.idChar[peek()]) return TError(invalidChar(peek()));
 			advance();
