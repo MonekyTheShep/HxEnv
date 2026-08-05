@@ -14,6 +14,11 @@ enum Token {
 	TEof;
 }
 
+typedef TokenWithPos = {
+  var line:Int;
+  var col:Int;
+}
+
 class Lexer {
 	var query:String;
 	var pos:Int;
@@ -66,8 +71,7 @@ class Lexer {
 				tokenQueue.push(readValue(peek()));
 				continue;
 			} else if (currentChar == '#'.code) {
-				readComment(); // Temporary not returned
-				continue;
+				return readComment();
 			} else if (currentChar == '"'.code || currentChar == "'".code) {
 				return readValue(currentChar);
 			}
