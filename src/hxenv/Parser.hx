@@ -58,13 +58,6 @@ class Parser {
         previousToken = currentToken;
         currentToken = lexer.token();
 
-        switch (currentToken)
-        {
-            case TError(err):
-                throw err;
-            default:
-        }
-
         while (currentToken.match(TComment(_))) {
             currentToken = lexer.token();
         }

@@ -4,13 +4,12 @@ using StringTools;
 
 enum Token {
 	TIdentifier(name:String);
-	TString(val:String);
-
 	TEquals; 
-	TError(err:String);
+	TString(val:String);
 
 	TComment(value:String); 
 	TNewline;
+	TUnknown(char:String);
 	TEof;
 }
 
@@ -57,8 +56,10 @@ class Lexer {
 					return readQuote(true);
 				} else if (char == "'".code) {
 					return readQuote(false);
-				} else {
+				} else if (Utils.valChar[char]) {
 					return readRawRalue();
+				} else {
+					return TUnknown(Std.string(char));
 				}
 			}
 
@@ -72,19 +73,18 @@ class Lexer {
 				continue;
 			} else if (currentChar == '#'.code) {
 				return readComment();
-			} else if (currentChar == '"'.code || currentChar == "'".code) {
-				return readValue(currentChar);
+			} else if (Utils.idChar[currentChar]) {
+				return readIdentifier();
 			}
 
-			return readIdentifier();
+			return TUnknown(Std.string(currentChar));
 		}
 	}
 
 	function readRawRalue():Token {
 		final start:Int = pos;
 
-		while (!isNewline(peek()) && !isEof(peek())) {
-			if (!Utils.valChar[peek()]) return TError(invalidChar(peek()));
+		while (!isNewline(peek()) && !isEof(peek()) && Utils.valChar[peek()]) {
 			advance();
 		}
 
@@ -94,9 +94,7 @@ class Lexer {
 	function readIdentifier():Token {
 		final start:Int = pos;
 
-		if (isDigit(peek())) return TError(invalidChar(peek()));
-		while (!isNewline(peek()) && !isEof(peek()) && !isEqual(peek())) {
-			if (!Utils.idChar[peek()]) return TError(invalidChar(peek()));
+		while (!isNewline(peek()) && !isEof(peek()) && Utils.idChar[peek()] && !isEqual(peek())) {
 			advance();
 		}
 
