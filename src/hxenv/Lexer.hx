@@ -112,7 +112,7 @@ class Lexer {
 					return readQuote(true);
 				} else if (char == "'".code) {
 					return readQuote(false);
-				} else if (Utils.valChar[char]) {
+				} else if (isEof(peek()) || isNewline(peek()) || valChar[char]) {
 					return readRawRalue();
 				} else {
 					return TUnknown(Std.string(char));
@@ -129,7 +129,7 @@ class Lexer {
 				continue;
 			} else if (currentChar == '#'.code) {
 				return readComment();
-			} else if (Utils.idChar[currentChar]) {
+			} else if (idChar[currentChar]) {
 				return readIdentifier();
 			}
 
@@ -140,7 +140,7 @@ class Lexer {
 	function readRawRalue():Token {
 		final start:Int = pos;
 
-		while (!isNewline(peek()) && !isEof(peek()) && Utils.valChar[peek()]) {
+		while (!isNewline(peek()) && !isEof(peek()) && valChar[peek()]) {
 			advance();
 		}
 
@@ -150,7 +150,7 @@ class Lexer {
 	function readIdentifier():Token {
 		final start:Int = pos;
 
-		while (!isNewline(peek()) && !isEof(peek()) && Utils.idChar[peek()] && !isEqual(peek())) {
+		while (!isNewline(peek()) && !isEof(peek()) && idChar[peek()] && !isEqual(peek())) {
 			advance();
 		}
 
@@ -227,10 +227,6 @@ class Lexer {
 	//----------------------------------------------------------------------------------
 	// Helper Functions
 	//----------------------------------------------------------------------------------
-	function invalidChar(char:Int):String {
-		return 'Unexpected char `${(char != '\n'.code) ? String.fromCharCode(char) : "\\n"}` at line $line, col ${col}!';
-	}
-	
 	function incLine() {
 		advance();
 		line++;
