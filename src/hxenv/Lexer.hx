@@ -112,8 +112,10 @@ class Lexer {
 					return readQuote(true);
 				} else if (char == "'".code) {
 					return readQuote(false);
-				} else if (isEof(peek()) || isNewline(peek()) || valChar[char]) {
+				} else if (valChar[char]) {
 					return readRawRalue();
+				} else if (isEof(peek()) || isNewline(peek())) {
+					return TString("");
 				} else {
 					return TUnknown(Std.string(char));
 				}
